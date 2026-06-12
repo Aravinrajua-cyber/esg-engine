@@ -1,0 +1,2 @@
+company_id,ticker,name,country,exchange,sector,currency,mcap_tier,market_cap_usd,free_float_pct,adv_usd,source
+BAD_NUMERIC_001,BADNUM.SI,Synthetic Invalid Numeric SG,SG,SGX,Financials,SGD,large,not_a_number,65,1200000,example_csv

@@ -1,0 +1,2 @@
+company_id,fiscal_date,period,revenue_local,capex_local,total_debt_local,interest_expense_local,operating_cash_flow_local,depreciation_local,currency,source
+BAD_PERIOD_001,2025-12-31,monthly,1250000000,90000000,420000000,21000000,180000000,35000000,SGD,example_csv

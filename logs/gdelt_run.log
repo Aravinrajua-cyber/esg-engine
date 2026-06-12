@@ -2,3 +2,19 @@ GDELT sentiment fetch (limit=None, interval=None) ...
   [3/477] O39.SI     'Oversea-Chinese Banking' -> 114 months (ok)
   [4/477] VIC.VN     'Vingroup' -> 114 months (ok)
   [5/477] Z77.SI     'Singapore Telecommunications' -> 114 months (ok)
+  [6/477] U11.SI     'United Overseas Bank' -> 114 months (ok)
+  [7/477] BBCA.JK    THROTTLED — cooldown 180s then retry
+  [7/477] BBCA.JK    'Bank Central Asia' -> 114 months (ok)
+  [8/477] ADVANC.BK  'Advanced Info Service' -> 114 months (ok)
+  [9/477] 1155.KL    'Malayan Banking' -> 114 months (ok)
+  [10/477] PTT.BK     THROTTLED — cooldown 180s then retry
+  [10/477] PTT.BK     'PTT' -> 0 months (empty)
+  [11/477] BREN.JK    'Barito Renewables Energy' -> 114 months (ok)
+  [12/477] GULF.BK    THROTTLED — cooldown 180s then retry
+  [12/477] GULF.BK    'Gulf Development' -> 114 months (ok)
+  [13/477] K6S.SI     'Prudential' -> 114 months (ok)
+  [14/477] S63.SI     'Singapore Technologies Engineering' -> 114 months (ok)
+  [15/477] AOT.BK     'Airports of Thailand' -> 114 months (ok)
+  [16/477] DCII.JK    THROTTLED — cooldown 180s then retry
+  [16/477] DCII.JK    'DCI Indonesia' -> 0 months (empty)
+  [17/477] BBRI.JK    'Bank Rakyat Indonesia (Persero)' -> 114 months (ok)

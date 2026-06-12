@@ -46,6 +46,15 @@ NUMERIC_COLUMNS = {
     "volume",
     "close_usd",
 }
+NON_NEGATIVE_COLUMNS = {
+    "market_cap_usd",
+    "adv_usd",
+    "revenue_local",
+    "total_debt_local",
+    "close_local",
+    "volume",
+    "close_usd",
+}
 
 
 class CsvValidationError(ValueError):
@@ -145,6 +154,10 @@ def _validate(path: Path) -> None:
                 raise CsvValidationError(f"score outside allowed range: {field}")
             if field in {"confidence_low", "confidence_high"} and value is not None and not 0 <= value <= 100:
                 raise CsvValidationError(f"confidence outside allowed range: {field}")
+            if field == "controversy_level" and value is not None and (value % 1 != 0 or not 0 <= value <= 5):
+                raise CsvValidationError(f"controversy outside allowed range: {field}")
+            if field in NON_NEGATIVE_COLUMNS and value is not None and value < 0:
+                raise CsvValidationError(f"negative numeric field: {field}")
 
         if {"confidence_low", "confidence_high"}.issubset(fieldnames):
             low = _number(row.get("confidence_low", ""), "confidence_low")
@@ -179,9 +192,12 @@ def test_csv_templates_are_valid(template: str):
         ("formula_injection_cell.csv", "formula injection"),
         ("excessively_large_text_field.csv", "excessively large text field"),
         ("unsupported_country_code.csv", "unsupported country code"),
+        ("invalid_numeric_field.csv", "non-numeric"),
+        ("controversy_out_of_range.csv", "controversy outside allowed range"),
+        ("unsupported_period.csv", "unsupported period"),
+        ("negative_price_or_volume.csv", "negative numeric field"),
     ],
 )
 def test_invalid_csv_examples_are_rejected(fixture: str, message: str):
     with pytest.raises(CsvValidationError, match=message):
         _validate(INVALID_DIR / fixture)
-
