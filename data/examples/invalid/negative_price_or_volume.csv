@@ -1,0 +1,2 @@
+company_id,date,close_local,volume,close_usd,currency,source
+BAD_PRICE_001,2026-03-31, -4.28,2100000, -3.17,SGD,example_csv

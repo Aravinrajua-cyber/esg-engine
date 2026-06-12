@@ -25,8 +25,10 @@ cd /d C:\Hackathon\esg-engine
 Expected current result:
 
 ```text
-16 passed, 3 skipped
+60 passed, 7 skipped
 ```
+
+The exact count may increase as Claude or Codex add more fixture-based tests. Treat any failure as blocking.
 
 ## Rebuild Report
 
@@ -59,6 +61,8 @@ npm.cmd install --cache .npm-cache
 
 If package fetches fail with `EACCES`, the current environment likely blocks outbound registry access. See `FRONTEND_BUILD_BLOCKER.md`.
 
+Do not run the live Yahoo fetchers as part of routine local verification unless outbound HTTPS and write access to `data/raw/` are both confirmed.
+
 ## Manual Browser Targets
 
 Vite normally prints the localhost URL after:
@@ -74,4 +78,3 @@ http://127.0.0.1:5173/
 ```
 
 Run the checks in `MANUAL_QA_CHECKLIST.md`.
-

@@ -1,0 +1,2 @@
+company_id,as_of_date,esg_total_score,environment_score,social_score,governance_score,controversy_level,confidence_low,confidence_high,source
+BAD_CONTROVERSY_001,2026-03-31,78,82,74,77,9,70,85,example_csv

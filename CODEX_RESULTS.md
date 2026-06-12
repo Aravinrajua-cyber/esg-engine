@@ -183,3 +183,30 @@ Static source checks did confirm:
 4. Replace placeholder frontend/footer/report prose with Claude-approved final copy while keeping synthetic/live distinctions explicit.
 5. Add runtime JSON schema validation before rendering if `/site_data/*` can ever be supplied by a user or untrusted process.
 6. Build a real CSV import path only if required, then connect the existing CSV edge-case fixtures to production validation.
+
+## Mirror support pass - 2026-06-13
+
+Codex created a writable mirror at `C:\Users\aravi\esg-engine-codex-mirror` because the original repository at `C:\Hackathon\esg-engine` was read-only to this session.
+
+Commands run in the mirror:
+
+```bat
+robocopy C:\Hackathon\esg-engine C:\Users\aravi\esg-engine-codex-mirror /E /XD .venv node_modules .npm-cache __pycache__ .pytest_cache /XF *.pyc /TEE /LOG:C:\Users\aravi\esg-engine-codex-mirror\mirror_robocopy.log /NP /R:1 /W:1
+git switch -c codex-mirror-support-pass
+C:\Hackathon\esg-engine\.venv\Scripts\python.exe -m pytest -q
+rg -n "dangerouslySetInnerHTML|eval\(|new Function|innerHTML|document\.write" site/src src tests
+rg -n "buy|sell|hold|outperform|underperform|target price|guaranteed|guarantee|investment advice|SYNTHETIC DEMONSTRATION DATA|synthetic" site/src src/report DEMO_SCRIPT.md README.md LOCAL_RUN_GUIDE.md DATA_IMPORT_GUIDE.md
+node --version
+npm.cmd --version
+```
+
+Results:
+
+- Mirror copy preserved `.git`.
+- Python tests in the mirror: `60 passed, 7 skipped`.
+- Dangerous-rendering source scan: no matches.
+- Node/npm versions available: Node `v24.14.1`, npm `11.11.0`.
+- `npm install`, frontend build, browser QA, and Word/PDF visual QA were not run in this network-independent pass.
+- Live Yahoo fetchers were not rerun after the blocker was documented.
+
+Files added or updated in this mirror pass are summarized in `CODEX_MIRROR_RESULTS.md`.

@@ -4,6 +4,9 @@ Use this checklist after `scripts\verify_local.bat` passes and the frontend dev 
 
 ## Website
 
+- [ ] Run `npm.cmd install`.
+- [ ] Run `npm.cmd run build`.
+- [ ] Start the Vite dev server with `scripts\start_site.bat`.
 - [ ] Homepage loads.
 - [ ] Leaderboard loads.
 - [ ] Exactly 500 synthetic companies can be screened.
@@ -25,6 +28,18 @@ Use this checklist after `scripts\verify_local.bat` passes and the frontend dev 
 - [ ] Charts remain readable.
 - [ ] No console errors appear.
 
+### Viewport Matrix
+
+- [ ] Desktop width around 1280px.
+- [ ] Tablet width around 768px.
+- [ ] Mobile width around 375px.
+
+### Keyboard Matrix
+
+- [ ] Tab order reaches navigation, filters, sliders, table rows, compare buttons, and detail content.
+- [ ] Enter opens a focused leaderboard row.
+- [ ] Focus indicator remains visible on light and dark themes.
+
 ## Word Report
 
 - [ ] Table of contents updates correctly.
@@ -42,4 +57,4 @@ Use this checklist after `scripts\verify_local.bat` passes and the frontend dev 
 
 - Browser visual QA has not passed until it is checked in a real browser at desktop, tablet, and mobile widths.
 - Word visual QA has not passed until the `.docx` is opened, the table of contents is updated, and a PDF export is inspected.
-
+- This mirror pass did not mark browser or Word items as passed because npm install/browser QA and Word/PDF inspection were not run.
