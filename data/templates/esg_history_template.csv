@@ -1,0 +1,4 @@
+company_id,as_of_date,esg_total_score,environment_score,social_score,governance_score,controversy_level,confidence_low,confidence_high,source
+DEMO_SG_001,2026-03-31,78,82,74,77,1,70,85,example_csv
+DEMO_MY_001,2026-03-31,64,61,66,65,2,55,72,example_csv
+DEMO_TH_001,2026-03-31,71,76,69,68,1,63,80,example_csv

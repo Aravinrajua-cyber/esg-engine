@@ -1,0 +1,2 @@
+company_id,ticker,name,country,exchange,sector,currency
+BAD_TEXT_001,BAD.SI,This synthetic invalid company name is intentionally far longer than a normal issuer name and exists only to verify that future CSV import tooling rejects oversized text fields before they can degrade the browser interface report tables logs or downstream validation artifacts because operational systems should have clear maximum field lengths and should fail closed when a text field exceeds that limit,SG,SGX,Financials,SGD

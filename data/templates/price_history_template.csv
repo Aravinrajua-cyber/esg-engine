@@ -1,0 +1,4 @@
+company_id,date,close_local,volume,close_usd,currency,source
+DEMO_SG_001,2026-03-31,4.28,2100000,3.17,SGD,example_csv
+DEMO_MY_001,2026-03-31,2.14,980000,0.45,MYR,example_csv
+DEMO_TH_001,2026-03-31,38.50,1450000,1.05,THB,example_csv

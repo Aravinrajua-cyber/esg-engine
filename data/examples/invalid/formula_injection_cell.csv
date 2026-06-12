@@ -1,0 +1,2 @@
+company_id,ticker,name,country,exchange,sector,currency
+BAD_FORMULA_001,BAD.SI,"=HYPERLINK(""http://example.invalid"",""click"")",SG,SGX,Financials,SGD

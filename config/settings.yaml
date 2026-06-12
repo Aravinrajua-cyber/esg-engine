@@ -1,0 +1,85 @@
+# ESG Momentum Engine 2.0 — central configuration
+# Every research parameter is fixed HERE, before validation runs (see BIAS_REGISTER B-14).
+
+run:
+  base_currency: USD
+  retrieval_stamp: null          # set automatically at fetch time
+  random_seed: 42
+
+universe:
+  target_size: 500
+  min_valid_tickers: 450         # Phase 1 acceptance gate
+  markets:
+    SG: { exchange: SGX,      yahoo_suffix: ".SI", fx_ticker: "SGDUSD=X", currency: SGD }
+    ID: { exchange: IDX,      yahoo_suffix: ".JK", fx_ticker: "IDRUSD=X", currency: IDR }
+    MY: { exchange: Bursa,    yahoo_suffix: ".KL", fx_ticker: "MYRUSD=X", currency: MYR }
+    TH: { exchange: SET,      yahoo_suffix: ".BK", fx_ticker: "THBUSD=X", currency: THB }
+    PH: { exchange: PSE,      yahoo_suffix: ".PS", fx_ticker: "PHPUSD=X", currency: PHP }
+    VN: { exchange: HOSE_HNX, yahoo_suffix: ".VN", fx_ticker: "VNDUSD=X", currency: VND }
+  allocation_method: aggregate_market_cap_proportional   # computed live, documented
+  liquidity_min_median_daily_dollar_volume_usd: 250000   # trailing window below
+  liquidity_median_window_months: 6
+  mcap_tiers: { mega_usd: 10000000000, large_usd: 2000000000 }   # else mid
+
+dates:
+  prices_start: "2014-01-01"
+  gdelt_start: "2017-01-01"
+  train_end: "2021-12-31"        # test window 2022-01-01 -> present, touched ONCE
+  end: null                      # null = today at fetch time
+
+signals:
+  zscore_within_date: true
+  winsorize_pct: [0.01, 0.99]
+  min_obs_sentiment_slope: 9     # of 12 monthly obs
+  windows:
+    sentiment_velocity_months: 12
+    sentiment_accel_split_months: 6
+    attention_trend_months: 12
+    tone_dispersion_months: 12
+    capex_trend_years: 3
+    cost_of_debt_trend_years: 2
+    revenue_cagr_years: 3
+    disclosure_trend_years: 2
+  controls: [mom_12_1, log_mcap, sector, country, vol_12m]
+
+validation:
+  ic_method: spearman
+  horizons_months: [1, 3, 6, 12]
+  newey_west: true
+  fdr_q: 0.10
+  fm_horizon_months: 3
+  vif_threshold: 5.0
+  walk_forward: { train_months: 24, validate_months: 6 }
+  formation_lag_sensitivity_months: 1
+  placebo_iterations: 1000
+  bootstrap: { block_months: 6, iterations: 2000, ci: 0.95 }
+
+backtest:
+  rebalance: quarterly
+  quintiles: 5
+  weighting: equal
+  hold_months: 3
+  costs_one_way_bps:             # documented ASEAN cost matrix (sources in report)
+    SG: { mega: 25, large: 25, mid: 35 }
+    MY: { mega: 30, large: 35, mid: 45 }
+    TH: { mega: 30, large: 35, mid: 45 }
+    ID: { mega: 35, large: 40, mid: 50 }
+    PH: { mega: 45, large: 50, mid: 60 }
+    VN: { mega: 45, large: 50, mid: 60 }
+
+scoring:
+  grade_bands: { A_plus: 90, A: 80, B: 65, C: 50 }   # D below C
+  flags:
+    low_coverage_pct: 50
+    stale_data_days: 60
+  classification_thresholds: cross_sectional_median   # 2x2 matrix
+
+gdelt:
+  base_url: "https://api.gdeltproject.org/api/v2/doc/doc"
+  request_interval_seconds: 7.0      # GDELT hard limit is 1 req / 5s; 7s leaves headroom
+  max_retries: 6
+  backoff_base_seconds: 12
+  consecutive_throttle_cooldown_s: 180   # circuit-breaker when GDELT IP-throttles mid-run
+  initial_cooldown_s: 0              # set >0 to wait before the first request
+  modes: [TimelineTone, TimelineVolRaw]
+  language: english

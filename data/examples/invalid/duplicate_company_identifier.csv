@@ -1,0 +1,3 @@
+company_id,ticker,name,country,exchange,sector,currency
+DUPLICATE_001,DUP1.SI,Duplicate One,SG,SGX,Financials,SGD
+DUPLICATE_001,DUP2.SI,Duplicate Two,SG,SGX,Industrials,SGD

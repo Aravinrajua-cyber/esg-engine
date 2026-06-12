@@ -1,0 +1,2 @@
+company_id,ticker,name,country,exchange,sector,currency
+BAD_QUOTE_001,BAD.SI,"Bad unclosed quoted name,SG,SGX,Financials,SGD

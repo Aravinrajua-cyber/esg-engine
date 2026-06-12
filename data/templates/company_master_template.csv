@@ -1,0 +1,4 @@
+company_id,ticker,name,country,exchange,sector,currency,mcap_tier,market_cap_usd,free_float_pct,adv_usd,source
+DEMO_SG_001,DEMO1.SI,Synthetic Demo Bank SG,SG,SGX,Financials,SGD,large,2500000000,65,1200000,example_csv
+DEMO_MY_001,DEMO1.KL,Synthetic Demo Industrials MY,MY,Bursa,Industrials,MYR,mid,850000000,58,420000,example_csv
+DEMO_TH_001,DEMO1.BK,Synthetic Demo Utilities TH,TH,SET,Utilities,THB,large,1900000000,72,980000,example_csv

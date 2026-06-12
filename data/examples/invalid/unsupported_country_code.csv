@@ -1,0 +1,2 @@
+company_id,ticker,name,country,exchange,sector,currency
+BAD_COUNTRY_001,BAD.XY,Bad Unsupported Country,XX,Unknown,Financials,USD
