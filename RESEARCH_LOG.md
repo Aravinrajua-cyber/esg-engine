@@ -162,3 +162,20 @@ expected there, will be populated on real data. Suite: 32 passed.
 
 **Next:** GDELT completes -> real signal run blocked only on Codex WO-1 (prices/fx/esg/
 fundamentals). Then: real validation -> real site_data -> report prose with real numbers.
+
+## 2026-06-13 — Live fetcher verification: prices/fx/fundamentals GOOD; Yahoo ESG endpoint DEAD
+
+Live runs (Codex's sandbox had no Yahoo route, so verified by Claude): `fx_daily` 22,735 rows x 5
+currencies, 2014-01-01 -> today, spot rates sane. `prices_daily` 1,249,605 rows, 477/477 tickers,
+100% current within 7 days, 403/403 backtest-eligible names covered, close_usd = close_local x fx
+exact; 70.4% of names reach back to 2014-01 (the rest are post-2014 IPOs, e.g. BREN.JK 2023 — not
+gaps). `fundamentals` 5,099 rows, 477/477 tickers, median 5 annual periods, revenue 72.9%
+populated — C-family computable for most of the universe. Codex's raw-contract tests (merged from
+the mirror pass) activate against the real artifacts and pass.
+
+`esg_snapshot`: 0/477 populated. Differential diagnosis: AAPL returns the same quoteSummary 404 —
+Yahoo has removed the free Sustainalytics module entirely (upstream death, not a fetcher bug; the
+fetcher degraded exactly per contract: empty schema-correct snapshot + 477-row failure log, no
+fabrication). Consequences and fallback logged as BIAS_REGISTER B-16; the 2x2 level axis now
+proxies from trailing-12m mean tone when B1 is absent (scoring layer, tagged in meta). The naive
+ESG-level backtest benchmark is reported as unavailable in live mode.

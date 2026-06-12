@@ -22,3 +22,17 @@ This register is maintained continuously and becomes the risk section of the rep
 | B-15 | **User misinterpretation risk** — scores mistaken for investment advice | Medium | n/a (legal/communication risk) | Persistent "research demonstration — not investment advice" disclaimer on site and report | Standard |
 
 Updates are appended with date stamps as new biases are identified during the build.
+
+## B-16 — Single-provider ESG dependency materialized as total loss (2026-06-13)
+Yahoo's free quoteSummary `esgScores` module now returns HTTP 404 for every symbol tested,
+including US mega-caps (AAPL) — the free Sustainalytics feed is dead, not ASEAN-thin. Live
+`esg_snapshot.parquet` is schema-correct but 0/477 populated; all B-family variables and E1 are
+missing in live mode. Effect: the validated composite can only draw on alt-data families
+(A sentiment, C fundamentals, D disclosures, F regulatory) — which is the thesis, stated more
+strongly: official-score dependence is now demonstrably a fragility, not just a divergence risk
+(Berg, Kölbel & Rigobon 2022). Mitigations: (1) the 2x2 level axis falls back to the trailing-12m
+mean-tone percentile (level of the same instrument whose slope is the momentum axis), tagged in
+companies.json meta.esg_level_axis_source; (2) the CSV import path is the licensed upgrade route
+for real point-in-time ESG history; (3) report and site state the gap plainly. Severity: M
+(level baseline lost; momentum thesis unaffected). Residual: naive-level benchmark (B1 quintiles)
+cannot be run on live data — reported as unavailable rather than proxied in the backtest.

@@ -210,11 +210,22 @@ def build_site_data(raw_dir: Path, panel_dir: Path, out_dir: Path, data_mode: st
 
     mom_pct = _pct(latest["momentum_z"]) if "momentum_z" in latest else _pct(latest["winner_z"])
     lvl_pct = _pct(zlatest["B1"]) if "B1" in zlatest.columns else pd.Series(dtype=float)
+    lvl_source = "B1"
+    sent_path = raw_dir / "sentiment_monthly.parquet"
+    if lvl_pct.empty and sent_path.exists():
+        # Yahoo killed the free Sustainalytics endpoint (2026-06-13, RESEARCH_LOG): with no B1,
+        # the 2x2 level axis falls back to the trailing-12m MEAN news tone — the level of the
+        # same instrument whose slope is the momentum axis. Documented provider-risk fallback.
+        s = pd.read_parquet(sent_path)
+        if len(s):
+            s["month"] = pd.to_datetime(s["month"])
+            tone12 = s[(s["month"] > as_of - pd.DateOffset(months=12)) & (s["month"] <= as_of)]
+            lvl_pct = _pct(tone12.groupby("ticker")["avg_tone"].mean())
+            lvl_source = "tone_12m_level_proxy"
     mom_med = float(mom_pct.median()) if len(mom_pct) else 50.0
     lvl_med = float(lvl_pct.median()) if len(lvl_pct) else 50.0
 
     hv_cut = rawlatest["vol_12m"].quantile(0.9) if "vol_12m" in rawlatest.columns else np.inf
-    sent_path = raw_dir / "sentiment_monthly.parquet"
     last_sent = {}
     if sent_path.exists():
         s = pd.read_parquet(sent_path)
@@ -330,7 +341,8 @@ def build_site_data(raw_dir: Path, panel_dir: Path, out_dir: Path, data_mode: st
         "flags": FLAG_META,
         "companies": companies,
         "meta": {"universe_rows": int(len(universe)),
-                 "unscored_names": int(len(universe) - len(companies))},
+                 "unscored_names": int(len(universe) - len(companies)),
+                 "esg_level_axis_source": lvl_source},
     }
     _write(out_dir / "companies.json", companies_json)
 
