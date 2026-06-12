@@ -36,6 +36,7 @@ SETTINGS = yaml.safe_load((ROOT / "config" / "settings.yaml").read_text())
 
 PILLAR_KEYS = ["sentiment_dynamics", "transition_readiness",
                "governance_credibility", "disclosure_behavior"]
+NEUTRAL_SCORE = 50.0   # percentile fill for an unobserved pillar: no information = at the median
 
 PILLAR_META = [
     {"key": "sentiment_dynamics", "label": "Sentiment Dynamics",
@@ -193,11 +194,19 @@ def build_site_data(raw_dir: Path, panel_dir: Path, out_dir: Path, data_mode: st
     vars_present = [v for v in CANDIDATE_VARS if v in zlatest.columns]
     coverage = zlatest[vars_present].notna().sum(axis=1) / len(CANDIDATE_VARS) * 100.0
 
-    # overall = weighted mean over AVAILABLE pillars (weights renormalized; coverage shows gaps)
-    w = pd.Series({p: weights.get(p, 0.0) for p in pillar_pct.columns})
-    avail = pillar_pct.notna()
-    overall = (pillar_pct.fillna(0.0) * w).sum(axis=1) / (avail * w).sum(axis=1)
-    overall = overall.dropna()
+    # A missing pillar is filled with the cross-sectional neutral (50 = "no information, no
+    # deviation from median"). The fill is used for BOTH display and the weighted sum, so the
+    # frontend sandbox identity overall = sum(w_i x pillar_i) reproduces served scores exactly.
+    # Honesty is carried by data_coverage, the LOW_COVERAGE flag, and the widened CI.
+    # Names with NO observed pillar are excluded entirely (meta.unscored_names).
+    w = pd.Series({p: weights.get(p, 0.0) for p in PILLAR_KEYS})
+    w = w / w.sum()
+    pillar_filled = pd.DataFrame(
+        {p: (pillar_pct[p] if p in pillar_pct.columns else np.nan) for p in PILLAR_KEYS},
+        index=pillar_pct.index)
+    scoreable = pillar_filled.notna().any(axis=1)
+    pillar_filled = pillar_filled.fillna(NEUTRAL_SCORE)
+    overall = (pillar_filled * w).sum(axis=1)[scoreable]
 
     mom_pct = _pct(latest["momentum_z"]) if "momentum_z" in latest else _pct(latest["winner_z"])
     lvl_pct = _pct(zlatest["B1"]) if "B1" in zlatest.columns else pd.Series(dtype=float)
@@ -244,7 +253,7 @@ def build_site_data(raw_dir: Path, panel_dir: Path, out_dir: Path, data_mode: st
         u = uni.loc[tk]
         score = float(sc_val)
         cov = float(coverage.get(tk, 0.0))
-        prow = pillar_pct.loc[tk] if tk in pillar_pct.index else pd.Series(dtype=float)
+        prow = pillar_filled.loc[tk]
         disp = float(prow.std()) if prow.notna().sum() >= 2 else 0.0
         hw = conf["base"] + conf["coverage_coeff"] * (1 - cov / 100.0) + conf["dispersion_coeff"] * disp
         zrow = zlatest.loc[tk] if tk in zlatest.index else pd.Series(dtype=float)
@@ -290,7 +299,7 @@ def build_site_data(raw_dir: Path, panel_dir: Path, out_dir: Path, data_mode: st
             "coverage_pct": round(cov, 1),
             "classification": _classify(mp_eff, lp_eff, mom_med, lvl_med),
             "esg_level_pctile": round(lp_eff, 1), "esg_momentum_pctile": round(mp_eff, 1),
-            "pillar_scores": {**{p: _noneify(prow.get(p, np.nan), nd=1) for p in PILLAR_KEYS},
+            "pillar_scores": {**{p: round(float(prow[p]), 1) for p in PILLAR_KEYS},
                               "data_coverage": round(cov, 1)},
             "flags": flags,
             "explanation": _explain(int(round(score)), grade, zrow),

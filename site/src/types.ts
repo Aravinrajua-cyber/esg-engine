@@ -56,3 +56,22 @@ export interface BacktestFeed {
   net: boolean;
   train_end_index: number;
 }
+
+export interface IcRow {
+  variable: string;
+  label: string;
+  ic_3m: number | null;
+  t_nw: number | null;
+  fdr_survived: boolean;
+}
+
+export interface PlaceboFeed {
+  realized_spread: number;
+  hist_bins: number[];
+  hist_counts: number[];
+}
+
+export interface GroupSpreadRow {
+  key: string;
+  spread_net: number;
+}

@@ -1,7 +1,7 @@
 import { ArrowDown, BarChart3, Moon, RotateCcw, Search, Sun } from "lucide-react";
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { loadBacktest, loadCompanies, loadRecords } from "./data";
-import { BacktestFeed, Company, CompaniesFeed, PillarKey } from "./types";
+import { loadBacktest, loadCompanies, loadIcTable, loadPlacebo, LoadIssue } from "./data";
+import { BacktestFeed, Company, CompaniesFeed, IcRow, PillarKey, PlaceboFeed } from "./types";
 
 const Plot = React.lazy(() => import("./Plot"));
 const PILLARS: PillarKey[] = ["sentiment_dynamics", "transition_readiness", "governance_credibility", "disclosure_behavior"];
@@ -18,8 +18,6 @@ const RISK_FLAG_WEIGHTS: Record<string, number> = {
   HIGH_VOL: 15,
   STALE_DATA: 10
 };
-type IcRow = { variable: string; label: string; ic_3m: number; t_nw: number; fdr_survived: boolean };
-type PlaceboFeed = { realized_spread: number; hist_bins: number[]; hist_counts: number[] };
 
 function useReveal<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
@@ -63,23 +61,50 @@ export default function App() {
   const [backtest, setBacktest] = useState<BacktestFeed | null>(null);
   const [icRows, setIcRows] = useState<IcRow[]>([]);
   const [placebo, setPlacebo] = useState<PlaceboFeed | null>(null);
+  const [issues, setIssues] = useState<LoadIssue[]>([]);
+  const [feedFailed, setFeedFailed] = useState(false);
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    loadCompanies().then(setFeed);
-    loadBacktest().then(setBacktest);
-    loadRecords<IcRow[]>("ic_table.json", []).then(setIcRows);
-    loadRecords<PlaceboFeed | null>("placebo.json", null).then(setPlacebo);
+    const addIssue = (issue: LoadIssue | null) => {
+      if (!issue) return;
+      console.error(`site_data validation failed for ${issue.file}:`, issue.errors);
+      setIssues((prev) => [...prev, issue]);
+    };
+    loadCompanies().then((r) => {
+      addIssue(r.issue);
+      if (r.data) setFeed(r.data);
+      else setFeedFailed(true);
+    });
+    loadBacktest().then((r) => {
+      addIssue(r.issue);
+      if (r.data) setBacktest(r.data);
+    });
+    loadIcTable().then((r) => {
+      addIssue(r.issue);
+      if (r.data) setIcRows(r.data);
+    });
+    loadPlacebo().then((r) => {
+      addIssue(r.issue);
+      if (r.data) setPlacebo(r.data);
+    });
   }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
   }, [dark]);
 
+  if (feedFailed) return <DataError issues={issues} />;
   if (!feed) return <Skeleton />;
   return (
     <>
       {feed.data_mode === "synthetic" && <div className="synthetic">SYNTHETIC DEMONSTRATION DATA</div>}
+      {feed.data_mode === "live" && <div className="liveTag">LIVE DATA · as of {feed.as_of_date}</div>}
+      {issues.length > 0 && (
+        <div className="issueStrip" role="alert">
+          Data files failed validation and were not rendered: {issues.map((issue) => issue.file).join(", ")}. See console for details.
+        </div>
+      )}
       <header className="topbar">
         <a href="#hero" className="brand">ESG Momentum Engine</a>
         <nav>
@@ -110,6 +135,22 @@ export default function App() {
 
 function Skeleton() {
   return <div className="skeletonPage"><div /><div /><div /></div>;
+}
+
+function DataError({ issues }: { issues: LoadIssue[] }) {
+  return (
+    <div className="dataError" role="alert">
+      <h1>Data failed validation</h1>
+      <p>The site data did not match the expected schema and was not rendered.</p>
+      {issues.map((issue) => (
+        <section key={issue.file}>
+          <h2>{issue.file}</h2>
+          <ul>{issue.errors.map((error) => <li key={error}>{error}</li>)}</ul>
+        </section>
+      ))}
+      <p>Regenerate the feed (`python -m src.scoring.score`) or check `SCHEMAS.md`.</p>
+    </div>
+  );
 }
 
 function Hero({ feed }: { feed: CompaniesFeed }) {

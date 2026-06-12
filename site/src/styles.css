@@ -55,6 +55,45 @@ select:focus-visible,
   font-weight: 800;
   letter-spacing: .08em;
 }
+.liveTag {
+  /* live-mode counterpart of .synthetic: same 32px strip the sticky topbar offsets against */
+  position: fixed;
+  z-index: 30;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: #0e7a4f;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.issueStrip {
+  position: fixed;
+  z-index: 29;
+  top: 32px;
+  left: 0;
+  right: 0;
+  background: #8a2a2a;
+  color: white;
+  padding: 4px 12px;
+  font-size: 12px;
+  text-align: center;
+}
+.dataError {
+  max-width: 720px;
+  margin: 10vh auto;
+  padding: 24px;
+  border: 1px solid #8a2a2a;
+  border-radius: 12px;
+}
+.dataError ul {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+}
 .topbar {
   position: sticky;
   top: 32px;
