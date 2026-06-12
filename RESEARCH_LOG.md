@@ -115,3 +115,50 @@ background process; Codex runs the other fetchers, the frontend (synthetic mode)
 viz/report/test scaffolds against the frozen contracts in parallel.
 
 ---
+
+## 2026-06-13 — Phases 3-5 science core BUILT and verified on the planted-signal synthetic panel
+
+GDELT fetch (the long pole) launched as a resumable background run over the 477-name universe
+(~14s/name under the 7s request spacing; per-ticker cache makes interruption free). While it runs,
+the full scientific core was written and validated against `data/_synth` (latent factor theta
+drives news tone AND forward returns; everything else is noise — a correct pipeline must find it).
+
+**New modules** — `src/validation/ic.py` (Spearman ICs, Newey-West t, BH-FDR),
+`src/composite/composites.py` (EIP/TRI/CPS/MASTER x {equal, trailing-IC, rank-aggregate},
+walk-forward), `src/validation/fama_macbeth.py` (FM + VIF + F1 interaction),
+`src/validation/backtest.py` (quarterly quintiles, ASEAN cost matrix, block bootstrap, DSR,
+placebo, robustness), `src/validation/run_validation.py` (orchestrator -> frozen
+validation_results.json), `src/scoring/score.py` (Phase 5 product layer -> site_data JSONs).
+
+**Methodological decisions (fixed before any real-data run):**
+1. **Winner selection metric:** training-window NET quarterly Q5-Q1 spread only. Test window is
+   evaluated once, for the table; never for selection.
+2. **DSR trial accounting:** N = 12 configs (4 composites x 3 weighting schemes); Var(SR) taken
+   across the 12 training-window per-period Sharpes (Bailey & Lopez de Prado 2014).
+3. **Placebo basis is gross-vs-gross.** Costs are orthogonal to whether a ranking carries
+   information; netting both sides would only shift both distributions by the same drag and
+   invite a cost-model artifact into the p-value.
+4. **Pillar composites IC-weight their members** (training window). First build equal-weighted
+   members inside each pillar; the synthetic test caught it: corr(product score, theta) was only
+   0.165 because noise members (A2, A4) diluted the planted ones, while the validated composite
+   itself sat at 0.67. After member IC-weighting + display smoothing: **0.705**. Lesson logged:
+   the product layer must inherit the research weights end-to-end, not re-aggregate naively.
+5. **Display smoothing:** product scores average pillar z over the trailing 3 rebalances
+   (`scoring.smooth_months`). Display-side only — validation and backtest never smooth.
+   Uses only t and earlier data: no lookahead.
+6. **Confidence interval:** half-width = base + coverage_coeff x (1 - coverage) +
+   dispersion_coeff x std(pillar scores) (`scoring.confidence`, settings.yaml). Additive
+   settings keys documented here per the B-14 parameter-freeze rule.
+7. pandas 3 removed grouping columns from `groupby.apply`; winsorize/z-score rewritten with
+   vectorized transforms (same math, contract tests unchanged).
+
+**Synthetic recovery results** (80 names, 108 rebalances, seed 42): FDR survivors
+{A1, A3, B3, C1, C3, C4, D1, E1} — planted A1/A3/C1/D1 all recovered; B3/C3/E1 are chance
+survivors, consistent with what q=0.10 FDR permits in a single draw (the register's honesty
+point, not a defect). Winner: TRI_equal. Net Q5-Q1 +43.1% ann. (the planted effect is
+deliberately enormous), bootstrap CI [+38.4%, +48.0%], DSR 0.978, placebo p = 0.000 with placebo
+mean +0.1%. Q5 spread has no down quarter on synth, so Sortino/Calmar are undefined (null) —
+expected there, will be populated on real data. Suite: 32 passed.
+
+**Next:** GDELT completes -> real signal run blocked only on Codex WO-1 (prices/fx/esg/
+fundamentals). Then: real validation -> real site_data -> report prose with real numbers.

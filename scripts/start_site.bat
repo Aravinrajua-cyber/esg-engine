@@ -12,5 +12,5 @@ if errorlevel 1 (
 
 echo Starting ESG Momentum Engine frontend dev server...
 echo Press Ctrl+C to stop.
-npm.cmd run dev
+call npm.cmd run dev
 exit /b %ERRORLEVEL%

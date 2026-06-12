@@ -24,6 +24,7 @@ def test_leaderboard_has_desktop_tablet_mobile_responsive_rules():
     assert "@media (max-width: 900px)" in css
     assert "grid-template-columns: 44px minmax(0, 1fr) 64px" in css
     assert ".virtual { height: 620px !important; }" in css
+    assert ":focus-visible" in css
 
 
 def test_synthetic_and_not_investment_advice_labels_are_present():
@@ -31,3 +32,19 @@ def test_synthetic_and_not_investment_advice_labels_are_present():
     assert "SYNTHETIC DEMONSTRATION DATA" in source
     assert "Research demonstration - not investment advice." in source
 
+
+def test_company_detail_exposes_schema_safe_risk_index():
+    source = APP_SOURCE.read_text(encoding="utf-8")
+    assert "function derivedRiskIndex" in source
+    assert "100 - company.coverage_pct" in source
+    assert "RISK_FLAG_WEIGHTS" in source
+    assert "Risk index" in source
+    assert "not stored in the source schema" in source
+
+
+def test_company_detail_labels_esg_and_non_esg_components():
+    source = APP_SOURCE.read_text(encoding="utf-8")
+    assert "E component: Transition Readiness" in source
+    assert "S component: Sentiment Dynamics" in source
+    assert "G component: Governance Credibility" in source
+    assert "Non-ESG component: Disclosure Behavior" in source

@@ -38,16 +38,9 @@ def _plotly():
 
 
 def apply_theme(fig, title: str, takeaway: str):
-    fig.update_layout(title={"text": title, "x": 0.02, "xanchor": "left"}, template="esg_engine")
-    fig.add_annotation(
-        text=takeaway,
-        xref="paper",
-        yref="paper",
-        x=0,
-        y=1.08,
-        showarrow=False,
-        align="left",
-        font={"size": 14, "color": "#555555"},
+    fig.update_layout(
+        title={"text": f"{title}<br><sup>{takeaway}</sup>", "x": 0.02, "xanchor": "left"},
+        template="esg_engine",
     )
     return fig
 

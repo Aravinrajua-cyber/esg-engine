@@ -73,6 +73,13 @@ scoring:
     low_coverage_pct: 50
     stale_data_days: 60
   classification_thresholds: cross_sectional_median   # 2x2 matrix
+  confidence:   # CI half-width = base + coverage_coeff*(1 - coverage_pct/100) + dispersion_coeff*std(pillar_scores)
+    base: 3.0
+    coverage_coeff: 15.0
+    dispersion_coeff: 0.25
+  timeseries_top_n: 20            # ranks that get the price/sentiment/score overlay in companies.json
+  smooth_months: 3                # product scores average pillar z over this many trailing rebalances
+                                  # (noise reduction only; backtest/validation never smooth)
 
 gdelt:
   base_url: "https://api.gdeltproject.org/api/v2/doc/doc"

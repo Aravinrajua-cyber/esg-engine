@@ -29,3 +29,9 @@ Updated by Claude. Prevents the two agents editing the same files.
 
 ## Status log
 - 2026-06-12: contracts frozen; universe + GDELT in progress by Claude; specs/ published for Codex.
+- 2026-06-13: universe built (477 names). Live fetchers coded but never executed. Delegation
+  package published: `CODEX_WORK_ORDERS.md` (WO-1 fetcher execution = critical path; WO-2 frontend
+  validation; WO-3 live-mode viz/report plumbing; WO-4 raw-contract tests; WO-5 build/QA, npm-gated).
+- 2026-06-13 (later): Claude science core complete (`src/composite`, `src/validation`, `src/scoring`)
+  and verified on the synthetic planted-signal panel (recovery corr 0.705, placebo p=0). GDELT fetch
+  running in background (resumable). Real-data run blocked on WO-1 fetcher outputs.

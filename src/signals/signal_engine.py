@@ -241,17 +241,15 @@ def compute_signals(raw_dir: str | Path, out_dir: str | Path) -> pd.DataFrame:
 
 
 def _winsorize_zscore(panel: pd.DataFrame) -> pd.DataFrame:
-    def per_group(g):
-        x = g["raw_value"].astype(float)
-        lo, hi = x.quantile(0.01), x.quantile(0.99)
-        xw = x.clip(lo, hi)
-        sd = xw.std(ddof=0)
-        z = (xw - xw.mean()) / sd if sd and sd > 0 else xw * 0.0
-        var = g["variable"].iloc[0]
-        g = g.copy()
-        g["z_value"] = z * ORIENT.get(var, 1)
-        return g
-    return panel.groupby(["date", "variable"], group_keys=False).apply(per_group)
+    panel = panel.copy()
+    x = panel["raw_value"].astype(float)
+    g = panel.assign(_x=x).groupby(["date", "variable"])["_x"]
+    xw = x.clip(g.transform(lambda s: s.quantile(0.01)), g.transform(lambda s: s.quantile(0.99)))
+    gw = panel.assign(_xw=xw).groupby(["date", "variable"])["_xw"]
+    sd = gw.transform(lambda s: s.std(ddof=0))
+    z = ((xw - gw.transform("mean")) / sd.where(sd > 0)).fillna(0.0)
+    panel["z_value"] = z * panel["variable"].map(ORIENT).fillna(1).astype(float)
+    return panel
 
 
 if __name__ == "__main__":

@@ -5,6 +5,19 @@ import { BacktestFeed, Company, CompaniesFeed, PillarKey } from "./types";
 
 const Plot = React.lazy(() => import("./Plot"));
 const PILLARS: PillarKey[] = ["sentiment_dynamics", "transition_readiness", "governance_credibility", "disclosure_behavior"];
+const COMPONENT_LABELS: Record<PillarKey, string> = {
+  sentiment_dynamics: "S component: Sentiment Dynamics",
+  transition_readiness: "E component: Transition Readiness",
+  governance_credibility: "G component: Governance Credibility",
+  disclosure_behavior: "Non-ESG component: Disclosure Behavior"
+};
+const RISK_FLAG_WEIGHTS: Record<string, number> = {
+  LOW_COVERAGE: 30,
+  CONTROVERSY_RISING: 25,
+  LOW_LIQUIDITY: 20,
+  HIGH_VOL: 15,
+  STALE_DATA: 10
+};
 type IcRow = { variable: string; label: string; ic_3m: number; t_nw: number; fdr_survived: boolean };
 type PlaceboFeed = { realized_spread: number; hist_bins: number[]; hist_counts: number[] };
 
@@ -277,6 +290,7 @@ function VirtualTable({ rows, sort, setSort, onOpen, onCompare, compare }: { row
 }
 
 function CompanyDetail({ company, flags, compareCompanies }: { company: Company; flags: CompaniesFeed["flags"]; compareCompanies: Company[] }) {
+  const riskIndex = derivedRiskIndex(company);
   return (
     <section className="detail" id="company">
       <div className="detailHeader">
@@ -288,10 +302,18 @@ function CompanyDetail({ company, flags, compareCompanies }: { company: Company;
         </div>
       </div>
       <div className="detailGrid">
-        <div className="pillarBlock">{PILLARS.map((key) => <div className="bar" key={key} title={`${labelFor(key)} score`}><span>{labelFor(key)}</span><i><b style={{ width: `${company.pillar_scores[key]}%` }} /></i><em>{company.pillar_scores[key].toFixed(0)}</em></div>)}</div>
+        <div className="pillarBlock">{PILLARS.map((key) => <div className="bar" key={key} title={`${COMPONENT_LABELS[key]} score`}><span>{COMPONENT_LABELS[key]}</span><i><b style={{ width: `${company.pillar_scores[key]}%` }} /></i><em>{company.pillar_scores[key].toFixed(0)}</em></div>)}</div>
         <Matrix company={company} />
         <Timeline company={company} />
-        <div className="coverageBlock"><h3>Risk flags</h3>{company.flags.length ? company.flags.map((flag) => <span className="flag" key={flag} title={flags.find((f) => f.key === flag)?.tooltip || flag}>{flag.replaceAll("_", " ")}</span>) : <p>No active risk flags.</p>}<h3>Data coverage</h3><strong>{company.coverage_pct.toFixed(0)}%</strong></div>
+        <div className="coverageBlock">
+          <h3>Risk index</h3>
+          <strong title="Derived client-side from uncovered data plus weighted active flags; not stored in the source schema.">{riskIndex}</strong>
+          <p>Derived from coverage gaps and active flags.</p>
+          <h3>Risk flags</h3>
+          {company.flags.length ? company.flags.map((flag) => <span className="flag" key={flag} title={flags.find((f) => f.key === flag)?.tooltip || flag}>{flag.replaceAll("_", " ")}</span>) : <p>No active risk flags.</p>}
+          <h3>Data coverage</h3>
+          <strong>{company.coverage_pct.toFixed(0)}%</strong>
+        </div>
       </div>
       {compareCompanies.length > 0 && <Compare companies={compareCompanies} />}
     </section>
@@ -371,6 +393,12 @@ function unique(values: string[]) {
 
 function isCompany(company: Company | undefined): company is Company {
   return Boolean(company);
+}
+
+function derivedRiskIndex(company: Company) {
+  const coverageGap = Math.max(0, 100 - company.coverage_pct);
+  const flagLoad = company.flags.reduce((sum, flag) => sum + (RISK_FLAG_WEIGHTS[flag] || 0), 0);
+  return Math.min(100, Math.round(coverageGap + flagLoad));
 }
 
 function labelFor(key: PillarKey) {

@@ -39,7 +39,7 @@ if errorlevel 1 (
 
 echo.
 echo [3/10] Checking npm...
-npm.cmd --version
+call npm.cmd --version
 if errorlevel 1 (
   echo [FAIL] npm.cmd is not available. Reinstall Node.js or repair PATH.
   exit /b 1
@@ -92,7 +92,7 @@ if errorlevel 1 (
   echo [FAIL] Could not enter site directory.
   exit /b 1
 )
-npm.cmd install
+call npm.cmd install
 if errorlevel 1 (
   echo [FAIL] npm install failed. See FRONTEND_BUILD_BLOCKER.md if registry access is blocked.
   exit /b 1
@@ -100,7 +100,7 @@ if errorlevel 1 (
 
 echo.
 echo [10/10] Building frontend...
-npm.cmd run build
+call npm.cmd run build
 if errorlevel 1 (
   echo [FAIL] Frontend build failed.
   exit /b 1

@@ -1,0 +1,4 @@
+GDELT sentiment fetch (limit=None, interval=None) ...
+  [3/477] O39.SI     'Oversea-Chinese Banking' -> 114 months (ok)
+  [4/477] VIC.VN     'Vingroup' -> 114 months (ok)
+  [5/477] Z77.SI     'Singapore Telecommunications' -> 114 months (ok)
