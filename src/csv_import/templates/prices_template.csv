@@ -1,0 +1,3 @@
+# columns: date=ISO YYYY-MM-DD trading date; ticker=uppercase ticker; close_local>=0 local close; volume>=0 traded units; close_usd>=0 close_local converted to USD
+date,ticker,close_local,volume,close_usd
+2026-03-31,DEMO1.SI,4.28,2100000,3.17

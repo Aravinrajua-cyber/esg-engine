@@ -1,0 +1,3 @@
+# columns: ticker=uppercase ticker; retrieval_date=ISO YYYY-MM-DD snapshot date; esg_total_risk/esg_e/esg_s/esg_g=0..100 nullable risk scores; controversy_level=integer 0..5 nullable
+ticker,retrieval_date,esg_total_risk,esg_e,esg_s,esg_g,controversy_level
+DEMO1.SI,2026-03-31,24.5,7.2,9.8,7.5,1
