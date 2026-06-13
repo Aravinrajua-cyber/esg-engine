@@ -98,7 +98,7 @@ export default function App() {
         <Hero feed={feed} />
         <Idea />
         <Leaderboard feed={feed} />
-        <ModelPerformance />
+        <ModelPerformance dataMode={feed.data_mode} />
         <Methodology feed={feed} />
         <Results feed={feed} />
         <Risks />

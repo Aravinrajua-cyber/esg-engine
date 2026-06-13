@@ -13,7 +13,8 @@ import {
   placeboPValue,
   REAL_DEFLATED_SHARPE,
   universeFunnel,
-  signalDecisions
+  signalDecisions,
+  isIllustrative
 } from "./synthData";
 
 const ACCENT = "#c8ff00";
@@ -33,12 +34,14 @@ function useReveal<T extends HTMLElement>() {
   return ref;
 }
 
-function ChartCard({ title, annotation, children }: { title: string; annotation: string[]; children: ReactNode }) {
+function ChartCard({ title, annotation, illustrative, children }: { title: string; annotation: string[]; illustrative: boolean; children: ReactNode }) {
   return (
     <article className="chartCard">
       <div className="chartHeader">
         <h3>{title}</h3>
-        <span title="Synthetic placeholder — swaps to frozen Phase 4 results when available">Illustrative Data</span>
+        {illustrative && (
+          <span title="Synthetic placeholder — swaps to frozen Phase 4 results when available">Illustrative Data</span>
+        )}
       </div>
       {children}
       <div className="annotation">
@@ -243,8 +246,9 @@ const RETURNS_DATA = compositeReturns.map((p) => ({
 }));
 const PLACEBO_BINS = placeboHistogram.map((b) => ({ x: b.sharpe, y: b.count }));
 
-export default function ModelPerformance() {
+export default function ModelPerformance({ dataMode }: { dataMode: string }) {
   const ref = useReveal<HTMLElement>();
+  const illustrative = isIllustrative(dataMode);
   return (
     <section id="model-performance" ref={ref} className="section reveal">
       <p className="eyebrow">Model Performance</p>
@@ -252,10 +256,11 @@ export default function ModelPerformance() {
       <p className="measure">
         This is the research case behind the screener: signal information coefficients, composite
         construction, the build/drop audit trail, a placebo control, and how the validation universe
-        is built. Charts below are illustrative synthetic placeholders until the Phase 4 run is frozen.
+        is built.{illustrative ? " Charts below are illustrative synthetic placeholders until the Phase 4 run is frozen." : " Charts below reflect the frozen Phase 4 validation run."}
       </p>
       <div className="performanceGrid">
         <ChartCard
+          illustrative={illustrative}
           title="Signal IC Timeline"
           annotation={[
             "Higher IC = stronger predictive power. All three retained signal families sit above the significance threshold.",
@@ -280,6 +285,7 @@ export default function ModelPerformance() {
         </ChartCard>
 
         <ChartCard
+          illustrative={illustrative}
           title="Composite Returns"
           annotation={[
             "MASTER (all signals combined) outperforms the equal-weight benchmark across the backtest window.",
@@ -305,6 +311,7 @@ export default function ModelPerformance() {
         </ChartCard>
 
         <ChartCard
+          illustrative={illustrative}
           title="Signal Decision Waterfall"
           annotation={[
             "The kept families are the only inputs allowed into validated composites.",
@@ -315,6 +322,7 @@ export default function ModelPerformance() {
         </ChartCard>
 
         <ChartCard
+          illustrative={illustrative}
           title="Placebo Test"
           annotation={[
             "1,000 random signal permutations produce Sharpe ratios clustered near zero (the null).",
@@ -333,6 +341,7 @@ export default function ModelPerformance() {
         </ChartCard>
 
         <ChartCard
+          illustrative={illustrative}
           title="Universe Funnel"
           annotation={[
             "Validation runs on a cleaner liquid subset, not every screened name — this avoids illiquid micro-cap survivorship effects.",

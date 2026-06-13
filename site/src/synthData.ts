@@ -4,6 +4,13 @@
 // when the run is frozen. The signal-decision waterfall and the universe funnel use REAL documented
 // numbers, not synthetic.
 
+// Whether the charts should show the "Illustrative Data" badge. Driven by companies.json's
+// data_mode at runtime: synthetic (or anything not "live") => illustrative; "live" => real,
+// so the badges auto-hide once frozen Phase 4 artifacts replace the values below.
+export function isIllustrative(dataMode: string): boolean {
+  return dataMode !== "live";
+}
+
 function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
