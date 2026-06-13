@@ -1,0 +1,66 @@
+slides:
+  - layout: title
+    title: "PLACEHOLDER: ESG Momentum Engine"
+    subtitle: "PLACEHOLDER: Synthetic demonstration deck, not real investment research"
+    body: "PLACEHOLDER: Replace every slide before presenting. Current content is scaffold text only."
+
+  - layout: statement
+    title: "PLACEHOLDER: ESG scores are slow; momentum is the product idea."
+    subtitle: "PLACEHOLDER: Hook slide. Not a validated claim."
+    body: "PLACEHOLDER: One sentence should carry the opening tension after Claude supplies final language."
+
+  - layout: statement
+    title: "PLACEHOLDER: The thesis is to separate static ESG level from change."
+    subtitle: "PLACEHOLDER: Thesis slide. Not empirical evidence."
+    body: "PLACEHOLDER: Explain the one-idea thesis here without bullets or unsupported performance language."
+
+  - layout: split
+    title: "PLACEHOLDER: Architecture turns raw inputs into explainable ranks."
+    subtitle: "PLACEHOLDER: Architecture slide."
+    body: "PLACEHOLDER: Describe fetchers, signals, validation, scoring, and frontend artifacts at a high level."
+    figure_path: "../../outputs/figures/composite_correlation_heatmap.png"
+
+  - layout: statement
+    title: "PLACEHOLDER: Data honesty is a feature, not a footnote."
+    subtitle: "PLACEHOLDER: Data-honesty slide."
+    body: "PLACEHOLDER: State synthetic mode, missing-data rules, and non-advice status clearly."
+
+  - layout: hero_figure
+    title: "PLACEHOLDER: The money chart will carry the result."
+    subtitle: "PLACEHOLDER: Money chart slide."
+    body: "PLACEHOLDER: Current chart is synthetic/demo output and must not be presented as live validation."
+    figure_path: "../../outputs/figures/money_chart.png"
+
+  - layout: hero_figure
+    title: "PLACEHOLDER: Placebo testing will guard against false signal."
+    subtitle: "PLACEHOLDER: Placebo slide."
+    body: "PLACEHOLDER: Replace with final interpretation only after Claude-owned validation is complete."
+    figure_path: "../../outputs/figures/placebo_histogram.png"
+
+  - layout: split
+    title: "PLACEHOLDER: Product screenshots show the screening workflow."
+    subtitle: "PLACEHOLDER: Screenshot slide."
+    body: "PLACEHOLDER: Use actual browser screenshots after frontend QA; this figure is a placeholder artifact."
+    figure_path: "../../outputs/figures/top20_leaderboard.png"
+
+  - layout: split
+    title: "PLACEHOLDER: A case study should explain one company without overclaiming."
+    subtitle: "PLACEHOLDER: Case-study slide."
+    body: "PLACEHOLDER: Insert a synthetic or approved live case study only with clear source status."
+    figure_path: "../../outputs/figures/company_overlay.png"
+
+  - layout: statement
+    title: "PLACEHOLDER: The risks are data coverage, market structure, and model drift."
+    subtitle: "PLACEHOLDER: Risks slide."
+    body: "PLACEHOLDER: Keep this candid. Do not hide limitations behind product language."
+
+  - layout: split
+    title: "PLACEHOLDER: The upgrade path moves from synthetic JSON to governed live inputs."
+    subtitle: "PLACEHOLDER: Upgrade-path slide."
+    body: "PLACEHOLDER: Describe validation gates, licensed data, and human review before production use."
+    figure_path: "../../outputs/figures/coverage_heatmap.png"
+
+  - layout: closing
+    title: "PLACEHOLDER: Summary: explainable ESG momentum, honestly labelled."
+    subtitle: "PLACEHOLDER: Closing slide."
+    body: "PLACEHOLDER: End with what is proven by the prototype and what remains unproven."
