@@ -179,3 +179,28 @@ fetcher degraded exactly per contract: empty schema-correct snapshot + 477-row f
 fabrication). Consequences and fallback logged as BIAS_REGISTER B-16; the 2x2 level axis now
 proxies from trailing-12m mean tone when B1 is absent (scoring layer, tagged in meta). The naive
 ESG-level backtest benchmark is reported as unavailable in live mode.
+
+## 2026-06-13 — PIVOT: discovery on the liquid universe (GDELT throttle forced the split)
+
+Real-data shakedown (full pipeline on 477 names, partial sentiment) confirmed the Phase 3->4 code
+runs clean on live data and surfaced the live coverage map: C-family (fundamentals) 300-460 names
+and F1 (country) 477 are real/final; A-family stuck at ~10% (GDELT IP-throttled to 48/477, days
+from completing); B-family + E1 dead (Yahoo ESG, B-16); D-family empty (disclosures fetcher
+returned 0 rows). On that partial data NOTHING survived BH-FDR and the orchestrator correctly
+halted rather than fabricate a composite — but A1 (sentiment velocity) already showed IC +0.085,
+t_NW 2.16, p 0.030, 62% hit at 3m on just ~52 names, i.e. a power problem, not a dead thesis.
+
+Decision (validation vs deployment split, standard quant practice): run all statistical discovery
+(Phases 3-4: univariate IC, FDR, Fama-MacBeth, composite discovery, backtest, DSR, placebo) on the
+**liquid discovery universe** = mcap_tier in {mega,large} AND adv_usd >= USD 1M median daily volume
+= **198 names** (SG 47, MY 46, ID 43, TH 37, VN 25), persisted to
+data/interim/discovery_universe.parquet. This is the backtest-tradeable scope anyway, so FDR/DSR
+on it is clean, not a compromise. The frozen composite is then SCORED on the full 477 for the
+leaderboard, with confidence bands widening by per-company data coverage. Report framing must state
+this discovery/deployment split explicitly.
+
+Implementation: gdelt.py --universe <path> (fetch a specific scope, shared resumable cache);
+run_validation.py --discovery <path> (restrict ALL Phase 4 stats to that subset; composite still
+scored on full universe downstream); phase4_results.pkl now written alongside validation_results.json.
+GDELT discovery fetch launched on the 198 liquid names (39 already cached, 159 remaining; full-477
+fetch stopped — cache preserved). Phase 3->4 + freeze runs the moment sentiment lands.

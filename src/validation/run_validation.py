@@ -68,13 +68,27 @@ def _spread_stats(z: pd.DataFrame, fwd3: pd.DataFrame, universe: pd.DataFrame,
     return bt.quintile_backtest(zz, fwd3, universe, SETTINGS)["periods"]
 
 
-def run(raw_dir: Path, panel_dir: Path, out_dir: Path) -> dict:
+def run(raw_dir: Path, panel_dir: Path, out_dir: Path, discovery_path: Path | None = None) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     universe = pd.read_parquet(raw_dir / "universe.parquet")
     panel = pd.read_parquet(panel_dir / "signal_panel.parquet")
     fwd = pd.read_parquet(panel_dir / "returns_forward.parquet")
     panel["date"] = pd.to_datetime(panel["date"])
     fwd["date"] = pd.to_datetime(fwd["date"])
+
+    # Discovery scope: all statistical work (IC/FDR/FM/composite/backtest/DSR/placebo) runs on the
+    # liquid universe with complete sentiment coverage; the composite is later scored on all 477.
+    discovery_scope = None
+    if discovery_path is not None:
+        disc = pd.read_parquet(discovery_path)
+        keep = set(disc["ticker"])
+        universe = universe[universe["ticker"].isin(keep)].copy()
+        panel = panel[panel["ticker"].isin(keep)].copy()
+        fwd = fwd[fwd["ticker"].isin(keep)].copy()
+        discovery_scope = {"path": str(discovery_path), "n_names": len(keep),
+                           "by_country": disc["country"].value_counts().to_dict()}
+        print(f"DISCOVERY scope: {len(keep)} liquid names ({discovery_scope['by_country']})")
+
     v = SETTINGS["validation"]
     train_end = pd.Timestamp(SETTINGS["dates"]["train_end"])
     fwd3 = _fwd_wide(fwd, v["fm_horizon_months"])
@@ -203,7 +217,8 @@ def run(raw_dir: Path, panel_dir: Path, out_dir: Path) -> dict:
             "fdr_q": v["fdr_q"], "survivors": survivors,
             "winner_members": wf_members, "selection_metric": "train net quarterly Q5-Q1 spread",
             "placebo_basis": "gross-vs-gross (information content; costs orthogonal)",
-            "high_vif": high_vif,
+            "high_vif": high_vif, "discovery_scope": discovery_scope,
+            "n_names_in_scope": int(universe["ticker"].nunique()),
         },
         "vif": [{"variable": r.variable, "vif": _f(r.vif)} for r in vif_tbl.itertuples()],
         "f1_interaction": f1_int,
@@ -224,6 +239,19 @@ def run(raw_dir: Path, panel_dir: Path, out_dir: Path) -> dict:
         },
     }
     (out_dir / "validation_results.json").write_text(json.dumps(results, indent=1))
+
+    # full results object (richer than JSON: keeps the raw frames + the frozen winner z-panel)
+    import pickle
+    payload = {
+        "results": results,
+        "frozen_winner": {"name": winner_name, "members": wf_members,
+                          "z_panel": winner_z, "validated_weights": validated_weights},
+        "tables": {"univariate_ic": uni_tbl, "fama_macbeth": fm_tbl, "vif": vif_tbl,
+                   "backtest_periods": per, "composite_summary": pd.DataFrame(comp_rows)},
+        "config_train_net_spread": train_net,
+    }
+    with open(out_dir / "phase4_results.pkl", "wb") as fh:
+        pickle.dump(payload, fh)
 
     # composite + pillar panel for Phase 5 scoring
     long = winner_z.stack().rename("winner_z").reset_index()
@@ -264,7 +292,10 @@ if __name__ == "__main__":
     ap.add_argument("--raw", default="data/raw", help="dir with universe.parquet")
     ap.add_argument("--panel", default="data/processed", help="dir with signal_panel + returns_forward")
     ap.add_argument("--out", default="data/processed")
+    ap.add_argument("--discovery", default=None,
+                    help="path to discovery_universe.parquet; restricts ALL Phase 4 statistics to "
+                         "that liquid subset (composite later scored on the full universe)")
     args = ap.parse_args()
-    run(ROOT / args.raw if not Path(args.raw).is_absolute() else Path(args.raw),
-        ROOT / args.panel if not Path(args.panel).is_absolute() else Path(args.panel),
-        ROOT / args.out if not Path(args.out).is_absolute() else Path(args.out))
+    _abs = lambda p: Path(p) if Path(p).is_absolute() else ROOT / p
+    run(_abs(args.raw), _abs(args.panel), _abs(args.out),
+        discovery_path=_abs(args.discovery) if args.discovery else None)

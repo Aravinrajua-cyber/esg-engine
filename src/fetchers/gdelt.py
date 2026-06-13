@@ -126,9 +126,10 @@ def fetch_company(query: str, start: str, end: str, interval: float) -> tuple[pd
     return monthly.reset_index(names="month"), throttled
 
 
-def fetch_all_sentiment(limit: int | None = None, interval: float | None = None) -> pd.DataFrame:
+def fetch_all_sentiment(limit: int | None = None, interval: float | None = None,
+                        universe_path: Path | None = None) -> pd.DataFrame:
     interval = interval if interval is not None else G["request_interval_seconds"]
-    uni = pd.read_parquet(RAW / "universe.parquet")
+    uni = pd.read_parquet(universe_path or RAW / "universe.parquet")
     if limit:
         uni = uni.head(limit)
     start = SETTINGS["dates"]["gdelt_start"].replace("-", "") + "000000"
@@ -204,13 +205,18 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--interval", type=float, default=None)
+    ap.add_argument("--universe", type=str, default=None,
+                    help="path to a universe parquet to fetch (default: data/raw/universe.parquet); "
+                         "use data/interim/discovery_universe.parquet for the liquid discovery scope")
     ap.add_argument("--refill", action="store_true",
                     help="delete empty/zero-volume caches then exit (re-run to fetch them)")
     args = ap.parse_args()
     if args.refill:
         refill_empty()
         raise SystemExit(0)
-    print(f"GDELT sentiment fetch (limit={args.limit}, interval={args.interval}) ...", flush=True)
-    df = fetch_all_sentiment(limit=args.limit, interval=args.interval)
+    upath = Path(args.universe) if args.universe else None
+    print(f"GDELT sentiment fetch (universe={args.universe or 'full'}, limit={args.limit}, "
+          f"interval={args.interval}) ...", flush=True)
+    df = fetch_all_sentiment(limit=args.limit, interval=args.interval, universe_path=upath)
     print(f"\nDONE. sentiment_monthly.parquet: {len(df)} rows, "
           f"{df['ticker'].nunique() if len(df) else 0} tickers with data.")
