@@ -87,7 +87,9 @@ export const placeboHistogram: PlaceboBin[] = counts.map((count, i) => ({
 export const placeboPValue = +(placeboSharpes.filter((s) => s >= REAL_DEFLATED_SHARPE).length / placeboSharpes.length).toFixed(3);
 
 // ---- Section 5: universe funnel — REAL documented numbers -----------------------------------------
-export const universeFunnel = {
+export interface FunnelLevel { label: string; n: number; pct: number; accent?: boolean; }
+export interface CountryCount { c: string; n: number; }
+export const universeFunnel: { levels: FunnelLevel[]; byCountry: CountryCount[] } = {
   levels: [
     { label: "ASEAN companies screened", n: 500, pct: 100 },
     { label: "Filtered · ADV > US$1M, ≥3yr history", n: 198, pct: 60 },

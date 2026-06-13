@@ -62,3 +62,53 @@ def test_company_detail_labels_esg_and_non_esg_components():
     assert "S component: Sentiment Dynamics" in source
     assert "G component: Governance Credibility" in source
     assert "Non-ESG component: Disclosure Behavior" in source
+
+
+# --- Model Performance page (added alongside the screener; see CLAUDE_CODEX_FRONTEND_INTEGRATION.md) ---
+
+MODEL_PERF_SOURCE = PROJECT_ROOT / "site" / "src" / "ModelPerformance.tsx"
+PLOT_SOURCE = PROJECT_ROOT / "site" / "src" / "Plot.tsx"
+
+
+def test_model_performance_sections_present():
+    perf = MODEL_PERF_SOURCE.read_text(encoding="utf-8")
+    for title in ["Signal IC Timeline", "Composite Returns", "Signal Decision Waterfall", "Placebo Test", "Universe Funnel"]:
+        assert title in perf
+    assert 'id="model-performance"' in perf
+    assert "function ModelPerformance" in perf
+    assert "function ChartCard" in perf
+    assert "function LineChart" in perf
+    assert "function Histogram" in perf
+    assert "<svg" in perf
+    assert "Illustrative Data" in perf
+
+
+def test_model_performance_is_wired_into_app_without_replacing_screener():
+    source = APP_SOURCE.read_text(encoding="utf-8")
+    # the screener and the new page coexist
+    assert "<ModelPerformance" in source
+    assert "#model-performance" in source
+    assert "function VirtualTable" in source          # screener preserved
+    assert "function CompanyDetail" in source or "CompanyDetail" in source
+
+
+def test_no_plotly_runtime_dependency():
+    app = APP_SOURCE.read_text(encoding="utf-8")
+    perf = MODEL_PERF_SOURCE.read_text(encoding="utf-8")
+    plot_stub = PLOT_SOURCE.read_text(encoding="utf-8")
+    assert "plotly.js-dist-min" not in app
+    assert "plotly.js-dist-min" not in perf
+    assert "return null" in plot_stub                 # Plot wrapper is a no-op stub
+
+
+def test_offline_safe_fonts_no_google_request():
+    css = CSS_SOURCE.read_text(encoding="utf-8")
+    assert "fonts.googleapis.com" not in css          # no live network font request
+    assert "-apple-system" in css                     # resilient system fallback stack
+
+
+def test_model_performance_css_present():
+    css = CSS_SOURCE.read_text(encoding="utf-8")
+    assert ".performanceGrid" in css
+    assert ".chartSvg" in css
+    assert "@media (max-width: 1100px)" in css

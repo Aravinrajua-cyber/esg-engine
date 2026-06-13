@@ -1,7 +1,2 @@
-declare module "plotly.js-dist-min" {
-  const Plotly: {
-    newPlot: (element: HTMLElement, data: unknown, layout?: unknown, config?: unknown) => Promise<void>;
-    purge: (element: HTMLElement) => void;
-  };
-  export default Plotly;
-}
+// Plotly module declaration removed — the app no longer depends on plotly.js-dist-min.
+export {};

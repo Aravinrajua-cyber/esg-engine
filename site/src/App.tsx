@@ -1,10 +1,9 @@
-import { ArrowDown, BarChart3, Moon, RotateCcw, Search, Sun } from "lucide-react";
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { loadBacktest, loadCompanies, loadIcTable, loadPlacebo, LoadIssue } from "./data";
+import { ArrowDown, BarChart3, RotateCcw, Search } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { loadCompanies, LoadIssue } from "./data";
 import siteContent from "./site_content.json";
-import { BacktestFeed, Company, CompaniesFeed, IcRow, PillarKey, PlaceboFeed } from "./types";
-
-const Plot = React.lazy(() => import("./Plot"));
+import ModelPerformance from "./ModelPerformance";
+import { Company, CompaniesFeed, PillarKey } from "./types";
 const PILLARS: PillarKey[] = ["sentiment_dynamics", "transition_readiness", "governance_credibility", "disclosure_behavior"];
 const COMPONENT_LABELS: Record<PillarKey, string> = {
   sentiment_dynamics: "S component: Sentiment Dynamics",
@@ -59,12 +58,8 @@ function useMedia(query: string) {
 
 export default function App() {
   const [feed, setFeed] = useState<CompaniesFeed | null>(null);
-  const [backtest, setBacktest] = useState<BacktestFeed | null>(null);
-  const [icRows, setIcRows] = useState<IcRow[]>([]);
-  const [placebo, setPlacebo] = useState<PlaceboFeed | null>(null);
   const [issues, setIssues] = useState<LoadIssue[]>([]);
   const [feedFailed, setFeedFailed] = useState(false);
-  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     const addIssue = (issue: LoadIssue | null) => {
@@ -77,23 +72,7 @@ export default function App() {
       if (r.data) setFeed(r.data);
       else setFeedFailed(true);
     });
-    loadBacktest().then((r) => {
-      addIssue(r.issue);
-      if (r.data) setBacktest(r.data);
-    });
-    loadIcTable().then((r) => {
-      addIssue(r.issue);
-      if (r.data) setIcRows(r.data);
-    });
-    loadPlacebo().then((r) => {
-      addIssue(r.issue);
-      if (r.data) setPlacebo(r.data);
-    });
   }, []);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-  }, [dark]);
 
   if (feedFailed) return <DataError issues={issues} />;
   if (!feed) return <Skeleton />;
@@ -110,20 +89,18 @@ export default function App() {
         <a href="#hero" className="brand">{siteContent.brand}</a>
         <nav>
           <a href="#leaderboard">{siteContent.nav.leaderboard}</a>
+          <a href="#model-performance">Model Performance</a>
           <a href="#methodology">{siteContent.nav.methodology}</a>
-          <a href="#results">{siteContent.nav.results}</a>
           <a href="#risks">{siteContent.nav.risks}</a>
-          <button className="iconButton" title="Toggle theme" onClick={() => setDark((v) => !v)}>
-            {dark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
         </nav>
       </header>
       <main>
         <Hero feed={feed} />
         <Idea />
         <Leaderboard feed={feed} />
-        <Methodology feed={feed} icRows={icRows} placebo={placebo} />
-        <Results feed={feed} backtest={backtest} />
+        <ModelPerformance />
+        <Methodology feed={feed} />
+        <Results feed={feed} />
         <Risks />
       </main>
       <footer>
@@ -372,7 +349,7 @@ function Compare({ companies }: { companies: Company[] }) {
   return <div className="comparePanel"><h3>Compare</h3><div>{companies.map((company) => <article key={company.ticker}><strong>{company.name}</strong><span>{company.overall_score.toFixed(1)} | {company.grade}</span>{PILLARS.map((key) => <i key={key}><b style={{ width: `${company.pillar_scores[key]}%` }} /></i>)}</article>)}</div></div>;
 }
 
-function Methodology({ feed, icRows, placebo }: { feed: CompaniesFeed; icRows: IcRow[]; placebo: PlaceboFeed | null }) {
+function Methodology({ feed }: { feed: CompaniesFeed }) {
   const ref = useReveal<HTMLElement>();
   const [open, setOpen] = useState(false);
   return (
@@ -381,18 +358,13 @@ function Methodology({ feed, icRows, placebo }: { feed: CompaniesFeed; icRows: I
       <h2>{siteContent.methodology.title}</h2>
       <button className="secondary" onClick={() => setOpen((v) => !v)}>{siteContent.methodology.buttonLabel}</button>
       {open && <p className="measure">{siteContent.methodology.explainer}</p>}
-      <div className="chartGrid">
-        <Suspense fallback={<div className="chartSkeleton" />}>
-          <Plot title="Validation IC" data={[{ type: "bar", x: icRows.map((r) => r.label || r.variable), y: icRows.map((r) => r.ic_3m), marker: { color: "#3B3BFF" } }]} />
-          <Plot title="Placebo" data={[{ type: "bar", x: placebo?.hist_bins || [0], y: placebo?.hist_counts || [1], marker: { color: "#BFC0FF" } }]} shapes={placebo ? [{ type: "line", x0: placebo.realized_spread, x1: placebo.realized_spread, y0: 0, y1: 1, yref: "paper", line: { color: "#3B3BFF", width: 3 } }] : []} />
-        </Suspense>
-      </div>
+      <p className="measure">The validation evidence — signal ICs, composite returns, the build/drop audit trail, the placebo control and the universe funnel — is on the <a href="#model-performance">Model Performance</a> page.</p>
       <p className="measure">{siteContent.methodology.validatedWeightsPrefix} {PILLARS.map((key) => `${labelFor(key)} ${feed.model.validated_weights[key].toFixed(2)}`).join(", ")}.</p>
     </section>
   );
 }
 
-function Results({ feed, backtest }: { feed: CompaniesFeed; backtest: BacktestFeed | null }) {
+function Results({ feed }: { feed: CompaniesFeed }) {
   const ref = useReveal<HTMLElement>();
   return (
     <section id="results" ref={ref} className="section reveal">
@@ -403,16 +375,7 @@ function Results({ feed, backtest }: { feed: CompaniesFeed; backtest: BacktestFe
         <Metric label={siteContent.results.metrics.testIc} value={feed.model.headline.test_ic.toFixed(3)} />
         <Metric label={siteContent.results.metrics.netSharpe} value={feed.model.headline.sharpe_net.toFixed(2)} />
       </div>
-      {backtest && (
-        <Suspense fallback={<div className="chartSkeleton" />}>
-          <Plot title={siteContent.results.backtestTitle} data={[
-            { type: "scatter", mode: "lines", name: "Q5", x: backtest.dates, y: backtest.q5 },
-            { type: "scatter", mode: "lines", name: "Q1", x: backtest.dates, y: backtest.q1 },
-            { type: "scatter", mode: "lines", name: "Benchmark", x: backtest.dates, y: backtest.benchmark },
-            { type: "scatter", mode: "lines", name: "Naive ESG", x: backtest.dates, y: backtest.naive_esg_q5 }
-          ]} shapes={[{ type: "line", x0: backtest.dates[backtest.train_end_index], x1: backtest.dates[backtest.train_end_index], y0: 0, y1: 1, yref: "paper", line: { dash: "dot", color: "#555" } }]} />
-        </Suspense>
-      )}
+      <p className="measure">Headline statistics are illustrative synthetic values until the Phase 4 run is frozen. The full validation visuals are on the <a href="#model-performance">Model Performance</a> page.</p>
     </section>
   );
 }
