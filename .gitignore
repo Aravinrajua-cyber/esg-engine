@@ -40,3 +40,4 @@ logs/*.log
 outputs/submission/
 tools/deck/ESG_Momentum_Engine.pptx
 tools/**/__pycache__/
+tools/gdelt_completion_watch.sh
