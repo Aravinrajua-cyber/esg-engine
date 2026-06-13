@@ -36,3 +36,4 @@ outputs/report/*.docx
 outputs/report/*.pdf
 outputs/report/*_render/
 .pytest-tmp/
+logs/*.log

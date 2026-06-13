@@ -240,7 +240,9 @@ def run(raw_dir: Path, panel_dir: Path, out_dir: Path, discovery_path: Path | No
     }
     (out_dir / "validation_results.json").write_text(json.dumps(results, indent=1))
 
-    # full results object (richer than JSON: keeps the raw frames + the frozen winner z-panel)
+    # full results object (richer than JSON: keeps the raw frames + the frozen winner z-panel).
+    # Top-level aliases ic_results / fama_macbeth_coefficients / backtest_metrics are the contract
+    # the Codex report builder (build_report._phase4_tables) reads to populate the Phase 4 tables.
     import pickle
     payload = {
         "results": results,
@@ -249,6 +251,9 @@ def run(raw_dir: Path, panel_dir: Path, out_dir: Path, discovery_path: Path | No
         "tables": {"univariate_ic": uni_tbl, "fama_macbeth": fm_tbl, "vif": vif_tbl,
                    "backtest_periods": per, "composite_summary": pd.DataFrame(comp_rows)},
         "config_train_net_spread": train_net,
+        "ic_results": uni_tbl,
+        "fama_macbeth_coefficients": fm_tbl,
+        "backtest_metrics": results["backtest"],
     }
     with open(out_dir / "phase4_results.pkl", "wb") as fh:
         pickle.dump(payload, fh)

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 APP_SOURCE = PROJECT_ROOT / "site" / "src" / "App.tsx"
 CSS_SOURCE = PROJECT_ROOT / "site" / "src" / "styles.css"
+SITE_CONTENT = PROJECT_ROOT / "site" / "src" / "site_content.json"
 
 
 def test_leaderboard_source_uses_virtualized_rows_and_keyboard_open():
@@ -29,8 +31,20 @@ def test_leaderboard_has_desktop_tablet_mobile_responsive_rules():
 
 def test_synthetic_and_not_investment_advice_labels_are_present():
     source = APP_SOURCE.read_text(encoding="utf-8")
+    content = SITE_CONTENT.read_text(encoding="utf-8")
     assert "SYNTHETIC DEMONSTRATION DATA" in source
-    assert "Research demonstration - not investment advice." in source
+    assert "Research demonstration - not investment advice." in content
+    assert "siteContent.footer.disclaimer" in source
+
+
+def test_frontend_copy_is_loaded_from_site_content_file():
+    source = APP_SOURCE.read_text(encoding="utf-8")
+    content = json.loads(SITE_CONTENT.read_text(encoding="utf-8"))
+    assert 'import siteContent from "./site_content.json"' in source
+    assert content["hero"]["title"]
+    assert content["methodology"]["explainer"]
+    assert content["results"]["metrics"]["deflatedSharpe"]
+    assert content["risks"]["cards"]
 
 
 def test_company_detail_exposes_schema_safe_risk_index():

@@ -8,12 +8,14 @@ from __future__ import annotations
 
 import json
 import math
+import pickle
 from collections import Counter
 from datetime import date
 from pathlib import Path
 from statistics import mean
 from typing import Any, Iterable
 
+import pandas as pd
 from docx import Document
 from docx.enum.section import WD_SECTION
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
@@ -26,6 +28,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REPORT_DIR = PROJECT_ROOT / "outputs" / "report"
 FIGURE_DIR = PROJECT_ROOT / "outputs" / "figures"
 SITE_DATA_DIR = PROJECT_ROOT / "outputs" / "site_data"
+PHASE4_RESULTS_PATH = PROJECT_ROOT / "data" / "processed" / "phase4_results.pkl"
 
 OUT_PATH = REPORT_DIR / "ESG_Momentum_Engine_Report.docx"
 FINAL_OUT_PATH = REPORT_DIR / "ESG_Momentum_Engine_Final_Report.docx"
@@ -38,6 +41,7 @@ WHITE = RGBColor(255, 255, 255)
 HEADER_FILL = "F2F4F7"
 CALLOUT_FILL = "F4F6F9"
 RISK_FILL = "FFF2CC"
+CLAUDE_MARKER = "[CLAUDE_WRITES_HERE]"
 
 PILLARS = [
     "sentiment_dynamics",
@@ -132,6 +136,18 @@ def _load_json(name: str) -> Any:
     return json.loads((SITE_DATA_DIR / name).read_text(encoding="utf-8"))
 
 
+def _load_phase4_results(path: Path = PHASE4_RESULTS_PATH) -> dict[str, Any]:
+    """Load Claude-owned Phase 4 validation outputs when available."""
+
+    if not path.exists():
+        return {}
+    with path.open("rb") as handle:
+        data = pickle.load(handle)
+    if not isinstance(data, dict):
+        raise TypeError("phase4_results.pkl must contain a dict-like results object")
+    return data
+
+
 def _fmt(value: Any, digits: int = 1) -> str:
     if value is None:
         return "n/a"
@@ -144,6 +160,93 @@ def _fmt(value: Any, digits: int = 1) -> str:
             return "n/a"
         return f"{value:,.{digits}f}"
     return str(value)
+
+
+def _is_missing(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, float) and math.isnan(value):
+        return True
+    return False
+
+
+def _rows_from_table(value: Any) -> list[dict[str, Any]]:
+    if value is None:
+        return []
+    if isinstance(value, pd.DataFrame):
+        return value.reset_index(drop=False).to_dict("records")
+    if isinstance(value, pd.Series):
+        return [{"metric": key, "value": val} for key, val in value.to_dict().items()]
+    if isinstance(value, list):
+        rows = []
+        for item in value:
+            if isinstance(item, dict):
+                rows.append(item)
+            else:
+                rows.append({"value": item})
+        return rows
+    if isinstance(value, dict):
+        if all(not isinstance(item, (dict, list, tuple, pd.DataFrame, pd.Series)) for item in value.values()):
+            return [{"metric": key, "value": val} for key, val in value.items()]
+        rows = []
+        for key, item in value.items():
+            if isinstance(item, dict):
+                rows.append({"name": key, **item})
+            else:
+                rows.append({"name": key, "value": item})
+        return rows
+    return [{"value": value}]
+
+
+def _first_table(results: dict[str, Any], keys: Iterable[str]) -> list[dict[str, Any]]:
+    for key in keys:
+        if key in results:
+            rows = _rows_from_table(results[key])
+            if rows:
+                return rows
+    return []
+
+
+def _phase4_tables(results: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    return {
+        "IC results": _first_table(results, ("ic_results", "ic", "ic_table", "information_coefficients")),
+        "Fama-MacBeth coefficients": _first_table(
+            results,
+            ("fama_macbeth_coefficients", "fama_macbeth", "fama_macbeth_results", "fm_results"),
+        ),
+        "Backtest metrics": _first_table(results, ("backtest_metrics", "backtest", "performance_metrics")),
+    }
+
+
+def _ordered_columns(rows: list[dict[str, Any]], preferred: Iterable[str]) -> list[str]:
+    present = {column for row in rows for column in row.keys()}
+    ordered = [column for column in preferred if column in present]
+    ordered.extend(sorted(present - set(ordered)))
+    return ordered
+
+
+def _add_claude_marker(doc: Document, section: str) -> None:
+    _callout(
+        doc,
+        CLAUDE_MARKER,
+        f"Claude will add final {section} narrative here. Codex leaves this marker intentionally.",
+        RISK_FILL,
+    )
+
+
+def _add_dataframe_like_table(
+    doc: Document,
+    title: str,
+    rows: list[dict[str, Any]],
+    preferred_columns: Iterable[str],
+) -> None:
+    doc.add_heading(title, level=2)
+    if not rows:
+        _callout(doc, "Phase 4 table unavailable.", f"{CLAUDE_MARKER} Claude will populate {title}.", RISK_FILL)
+        return
+    columns = _ordered_columns(rows, preferred_columns)
+    widths = [6.5 / max(1, len(columns))] * len(columns)
+    _table(doc, columns, ([row.get(column) for column in columns] for row in rows), widths)
 
 
 def _risk_index(company: dict[str, Any]) -> int:
@@ -390,12 +493,14 @@ def _section_intro(doc: Document, title: str, body: str) -> None:
     _paragraph(doc, body)
 
 
-def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
+def build_final_report(out_path: Path = FINAL_OUT_PATH, phase4_path: Path = PHASE4_RESULTS_PATH) -> Path:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     feed = _load_json("companies.json")
     backtest = _load_json("backtest.json")
     placebo = _load_json("placebo.json")
     ic_rows = _load_json("ic_table.json")
+    phase4_results = _load_phase4_results(phase4_path)
+    phase4_tables = _phase4_tables(phase4_results)
     companies = feed["companies"]
     stats = _stats(companies)
 
@@ -476,6 +581,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
         "7. Synthetic Data-Generation Methodology",
         "The synthetic generator uses the configured random seed 42 and the available universe parquet as its source shape. If fewer than 500 source companies are available, it pads with clearly named synthetic demo companies. Scores are generated from bounded random pillar values, then ranked deterministically by overall score.",
     )
+    _add_claude_marker(doc, "methodology")
     _numbered(
         doc,
         [
@@ -492,6 +598,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
         "8. Scoring Methodology",
         "The validated weight vector in the synthetic feed is applied to four model pillars. Data coverage is displayed to the user and used in risk/confidence interpretation, but it is excluded from the weighted score calculation.",
     )
+    _add_claude_marker(doc, "scoring methodology")
     weights = feed["model"]["validated_weights"]
     _table(
         doc,
@@ -536,7 +643,31 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "11. Risk-Index Calculation",
+        "11. Phase 4 Validation Tables",
+        "This section reads Claude-owned validation output from data/processed/phase4_results.pkl. When that pickle is absent, Codex leaves explicit placeholders instead of inventing statistics.",
+    )
+    _add_dataframe_like_table(
+        doc,
+        "IC results",
+        phase4_tables["IC results"],
+        ("variable", "label", "horizon", "ic_mean", "ic_std", "ic_3m", "t_nw", "hit_rate", "p", "fdr_survived"),
+    )
+    _add_dataframe_like_table(
+        doc,
+        "Fama-MacBeth coefficients",
+        phase4_tables["Fama-MacBeth coefficients"],
+        ("variable", "coef", "t_nw", "p", "std_err", "fdr_survived"),
+    )
+    _add_dataframe_like_table(
+        doc,
+        "Backtest metrics",
+        phase4_tables["Backtest metrics"],
+        ("metric", "value", "winning_composite", "gross", "net", "sharpe", "sortino", "max_dd", "calmar", "q5_q1_spread_net", "deflated_sharpe"),
+    )
+
+    _section_intro(
+        doc,
+        "12. Risk-Index Calculation",
         "The frozen companies.json schema stores risk flags and coverage, not a separate risk_index field. For reporting and QA, a derived risk index is calculated from missing coverage plus weighted flags and clipped to a 0 to 100 range.",
     )
     _table(
@@ -556,13 +687,14 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "12. Confidence-Band Methodology",
+        "13. Confidence-Band Methodology",
         "Confidence bands represent uncertainty around the score. In synthetic mode, the band width is generated from a seeded range and clipped to 0 to 100. In live mode, it should be replaced by a statistically grounded uncertainty estimate that reflects input coverage, source freshness, validation error, and market-specific reliability.",
     )
+    _add_claude_marker(doc, "confidence methodology")
 
     _section_intro(
         doc,
-        "13. Descriptive Statistics",
+        "14. Descriptive Statistics",
         "The following statistics summarize the generated synthetic feed. They are included to verify distribution sanity and report plumbing, not to describe live ASEAN issuers.",
     )
     _table(
@@ -582,7 +714,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
     _table(doc, ["Grade", "Count"], sorted(stats["grade_counts"].items()), [3.25, 3.25])
     _table(doc, ["Classification", "Count"], sorted(stats["classification_counts"].items()), [3.25, 3.25])
 
-    doc.add_heading("14. Figures And Plain-Language Interpretations", level=1)
+    doc.add_heading("15. Figures And Plain-Language Interpretations", level=1)
     _paragraph(
         doc,
         "All figures below are generated from synthetic or fixture-style artifacts. They are inserted at near full page width so they can be read in Word without excessive zooming.",
@@ -594,9 +726,10 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "15. Limitations",
+        "16. Limitations",
         "The current build validates data contracts, visualization plumbing, and report presentation. It does not validate a live investment model. Synthetic scores, spreads, ICs, and rankings should not be used outside demonstration and testing contexts.",
     )
+    _add_claude_marker(doc, "limitations and risk prose")
     _bullets(
         doc,
         [
@@ -609,9 +742,10 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "16. Risk Register",
+        "17. Risk Register",
         "The risk register below records the main implementation and interpretation risks visible at this stage.",
     )
+    _add_claude_marker(doc, "risk register narrative")
     _table(
         doc,
         ["Risk", "Severity", "Mitigation"],
@@ -627,43 +761,48 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "17. Data-Source And Licensing Risks",
+        "18. Data-Source And Licensing Risks",
         "Live mode may use yfinance/Yahoo Finance-derived market data, GDELT news data, exchange announcements, and issuer disclosures. Each source must be reviewed for permitted use, redistribution, caching, attribution, and client-facing display rights before launch.",
     )
+    _add_claude_marker(doc, "data-source and licensing risks")
 
     _section_intro(
         doc,
-        "18. Statistical Risks",
+        "19. Statistical Risks",
         "Statistical risks include look-ahead bias, survivorship bias, multiple testing, factor crowding, small sample sizes by market, unstable correlations, non-stationary relationships, transaction-cost underestimation, and overstated inference from noisy proxies.",
     )
+    _add_claude_marker(doc, "statistical risks")
 
     _section_intro(
         doc,
-        "19. Model-Governance Risks",
+        "20. Model-Governance Risks",
         "The model requires versioned data contracts, frozen validation windows, documented parameter changes, reviewable transformations, and explicit sign-off before live client use. Weight sandbox outputs should remain labelled as custom exploratory views rather than validated model outputs.",
     )
+    _add_claude_marker(doc, "model-governance risks")
 
     _section_intro(
         doc,
-        "20. Cybersecurity And Privacy Risks",
+        "21. Cybersecurity And Privacy Risks",
         "The current frontend is static and reads JSON only. Future upload, API, or CSV-import paths must validate file type, size, schema, encoding, numeric bounds, formula injection risks, and personally identifiable information before accepting user-provided data.",
     )
+    _add_claude_marker(doc, "cybersecurity and privacy risks")
 
     _section_intro(
         doc,
-        "21. User-Misinterpretation Risks",
+        "22. User-Misinterpretation Risks",
         "Users may overread ranks, grade badges, confidence bands, or backtest-style charts. The product should keep disclaimers visible, explain missing data, show confidence and coverage next to scores, and avoid action-oriented language such as buy, sell, or outperform.",
     )
+    _add_claude_marker(doc, "user-misinterpretation risks")
 
     _section_intro(
         doc,
-        "22. Accessibility Considerations",
+        "23. Accessibility Considerations",
         "The frontend source includes semantic sections, keyboard-open behavior for leaderboard rows, responsive mobile collapse, persistent labels, and reduced-motion CSS. Browser-based accessibility validation is still required once npm dependencies can be installed and the Vite app can run.",
     )
 
     _section_intro(
         doc,
-        "23. Future Real-Data Integration Plan",
+        "24. Future Real-Data Integration Plan",
         "The next phase should connect the existing fetchers to live artifacts, backfill price/FX/fundamental/ESG/disclosure/sentiment data, generate Claude-owned validation results, and replace synthetic frontend feeds only after schema and governance checks pass.",
     )
     _numbered(
@@ -680,7 +819,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "24. Reproducibility Instructions",
+        "25. Reproducibility Instructions",
         "The following commands reproduce the current non-frontend artifacts in this environment. Frontend commands require npm dependency access as documented in FRONTEND_BUILD_BLOCKER.md.",
     )
     _table(
@@ -699,7 +838,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "25. Bibliography With Citations",
+        "26. Bibliography With Citations",
         "These references identify the source systems, libraries, and artifacts relevant to the demonstration. They are not evidence for the synthetic numerical results.",
     )
     _bullets(
@@ -717,7 +856,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "26. Appendix A: Full Variable Dictionary",
+        "27. Appendix A: Full Variable Dictionary",
         "The dictionary below covers the primary companies.json feed and the derived reporting-only risk index.",
     )
     dictionary_rows = [
@@ -756,7 +895,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
 
     _section_intro(
         doc,
-        "27. Appendix B: Generated Artifact Inventory",
+        "28. Appendix B: Generated Artifact Inventory",
         "The final report was generated from the local artifacts listed below.",
     )
     _table(
@@ -767,6 +906,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
             ("Backtest feed", str(SITE_DATA_DIR / "backtest.json")),
             ("IC table", str(SITE_DATA_DIR / "ic_table.json")),
             ("Placebo feed", str(SITE_DATA_DIR / "placebo.json")),
+            ("Phase 4 results", str(phase4_path)),
             ("Figures directory", str(FIGURE_DIR)),
             ("Frontend blocker note", str(PROJECT_ROOT / "FRONTEND_BUILD_BLOCKER.md")),
         ],
@@ -777,10 +917,10 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH) -> Path:
     return out_path
 
 
-def build_report(out_path: Path = OUT_PATH) -> Path:
+def build_report(out_path: Path = OUT_PATH, phase4_path: Path = PHASE4_RESULTS_PATH) -> Path:
     """Backward-compatible report builder entry point."""
 
-    return build_final_report(out_path)
+    return build_final_report(out_path, phase4_path)
 
 
 if __name__ == "__main__":
