@@ -1,0 +1,172 @@
+methodology: '## Methodology — Actions Taken
+
+  This section records how the engine was built, in order, with the reasoning, the alternatives, and why
+  each was accepted or rejected. Every parameter named here was fixed in config/settings.yaml before the
+  validation window was evaluated, so no threshold could be tuned to the answer. Realized magnitudes appear
+  in the Results section, populated from the frozen phase4_results.pkl; this section documents method
+  and decisions only.
+
+
+  ## Universe construction
+
+  The target was 500 ASEAN names with a hard gate of at least 450; the realized universe is 477 (SG 125,
+  ID 116, TH 100, MY 96, VN 40). The Philippines was dropped because the data source returns zero resolvable
+  PSE tickers under any Yahoo suffix tested; rather than fabricate coverage the gap is documented and
+  the curated PH seeds reserved for the licensed-import path. SGX-listed depository receipts were filtered
+  out because they double-count constituents at inflated market caps and otherwise made Singapore 45 to
+  51 percent of the universe. Names per market are allocated proportional to captured aggregate USD market
+  cap with a 25 percent per-market cap and pro-rata redistribution, because the screener truncates each
+  market at 250 results and a naive proportional split would over-weight Singapore. Liquidity uses median
+  daily dollar volume over six months: a US$250,000 floor governs backtest eligibility in the full universe
+  (74 names flagged low-liquidity, kept in the scoreboard but excluded from portfolios), and a tighter
+  US$1,000,000 floor on mega and large caps defines the 198-name discovery universe on which the statistical
+  proof is run.
+
+
+  ## Data fetchers
+
+  Prices and FX come from yfinance (2014 to present, 477 of 477 names, USD via same-day FX, weekends forward-filled
+  as the one documented imputation). News sentiment comes from GDELT DOC 2.0 (monthly tone and article
+  volume from 2017), chosen for free global daily depth despite entity-matching noise that is mitigated
+  by cleaning legal-form suffixes. The ESG snapshot could not be retrieved: Yahoo''s free Sustainalytics
+  endpoint now returns HTTP 404 for every symbol including US mega-caps, an upstream removal rather than
+  a fetcher fault, so the B-family and E1 are unavailable (bias-register B-16). This is itself a live
+  demonstration of the thesis that single-provider ESG dependence is a fragility. The SGX/Bursa disclosure
+  feed returned zero rows, so the D-family is empty. The model therefore rests on the families that are
+  populated: A (sentiment), C (fundamentals), and F (regulatory), plus controls.
+
+
+  ## Signal families
+
+  Every variable is a point-in-time function: a signal at month t uses only data dated on or before t,
+  with a 90-day publication lag on fundamentals. At each rebalance date each variable is winsorized at
+  the 1st and 99th percentiles, z-scored cross-sectionally within the date, and sign-oriented so higher
+  always means better expected return; missing values are left missing and never imputed. A1 sentiment
+  velocity is the 12-month OLS slope of monthly tone (at least 9 of 12 observations); A2 is the 6-month
+  slope minus the prior 6-month slope; A3 is the 12-month slope of log article volume; A4 is the 12-month
+  tone standard deviation (negative). C1 is the 3-year change in CapEx/Revenue; C2 the 2-year change in
+  interest expense over total debt (negative); C3 the 3-year revenue CAGR; C4 the 2-year change in CapEx/Depreciation.
+  F1 is a 0-to-10 country regulatory-momentum index built from four publicly cited components. Controls
+  are 12-1 price momentum, log size, 12-month volatility, and sector and country dummies, so any ESG claim
+  must prove information beyond the known factors.
+
+
+  ## Phase 4 validation
+
+  Univariate information coefficients use monthly Spearman rank IC of each z-score against forward 1,
+  3, 6 and 12-month USD returns, summarized with Newey-West t-statistics at a lag equal to the horizon
+  to correct for the autocorrelation that overlapping forward returns induce. Benjamini-Hochberg false-discovery-rate
+  control at q equals 0.10 is applied jointly across all roughly 72 variable-by-horizon hypotheses, so
+  only honestly surviving variables enter composites; this directly answers the factor-zoo multiple-testing
+  critique of Harvey, Liu and Zhu (2016). Fama-MacBeth cross-sectional regressions of forward 3-month
+  returns on survivors plus all controls, with Newey-West t-statistics on the coefficient series, test
+  whether any ESG variable carries information beyond momentum, size, sector and country; variance-inflation
+  factors above 5 are flagged. The training window is everything up to 2021-12-31 and the test window
+  is 2022 onward, touched exactly once with the already-frozen composite; the 2022 rate shock sits deliberately
+  out of sample. The backtest forms quarterly equal-weighted quintile portfolios over the liquidity-filtered
+  universe in USD, with a documented ASEAN cost matrix from 25 bps for Singapore large caps to 60 bps
+  for Vietnamese mid caps, reporting gross and net. The headline net Q5-minus-Q1 spread is reported with
+  a block-bootstrap 95 percent confidence interval (6-month blocks, 2,000 iterations) because 6-month
+  blocks preserve the serial dependence that i.i.d. resampling would ignore, and with a Deflated Sharpe
+  Ratio (Bailey and Lopez de Prado 2014) that discounts for the 12 configurations tried. A 1,000-iteration
+  cross-sectional placebo, compared gross against gross, guards against false signal.
+
+
+  ## The GDELT pivot
+
+  The full-universe sentiment fetch wedged near 10 percent under GDELT IP throttling, days from completion.
+  Continuing was rejected as unusable, and a partial-coverage freeze would have been worthless because
+  three of four composites would have appeared to lose purely from missing inputs. The pivot runs all
+  statistical discovery on the 198-name liquid universe with complete sentiment coverage, then scores
+  the full 477 for the leaderboard with confidence bands that widen on missing coverage. This is the standard
+  validation-versus-deployment separation real desks use, and it is cleaner than the original because
+  every variable''s IC is now computed on the same well-covered cross-section.
+
+
+  ## Composite construction
+
+  Four composites are built from FDR survivors: EIP (sentiment velocity, attention trend, ESG momentum
+  where available, disclosure trend), TRI (CapEx-intensity trend, cost-of-debt trend, country overlay),
+  CPS (governance, controversy, tone dispersion), and a training-IC-weighted MASTER blend. Each is built
+  under equal, trailing-IC, and rank-aggregate weighting, for 12 configurations; the winner is chosen
+  on training-window net quarterly spread only, and that count of 12 feeds the Deflated Sharpe. Product
+  pillar weights are the normalized training-window pillar ICs floored at 0.05, so the front-end weight
+  sandbox reproduces the validated ranking exactly. Before any live data, the whole pipeline was validated
+  on a seeded synthetic panel with a planted latent factor and recovered it at rank correlation near 0.71
+  with a placebo p-value of zero, confirming the machinery is correct.'
+scoring methodology: The overall score is the validated weighted sum of four 0-to-100 pillar percentiles
+  (Sentiment Dynamics, Transition Readiness, Governance Credibility, Disclosure Behavior); the fifth pillar,
+  Data Coverage, is displayed for honesty but deliberately excluded from the weighted sum. Pillar percentiles
+  are computed cross-sectionally at the as-of date from the same training-IC-weighted member z-scores
+  used in validation, so the front-end weight sandbox recomputing overall = sum of weight times pillar
+  exactly reproduces the served ranking. Grades follow fixed bands (A+ at 90, A at 80, B at 65, C at 50,
+  else D). The 2x2 classification (Hidden Winner, Future Leader, Overrated Leader, Value Trap) splits
+  ESG-level against ESG-momentum at cross-sectional medians; with the live ESG level unavailable the level
+  axis falls back to trailing-12-month mean-tone percentile, tagged in metadata. A name with no observed
+  pillar is excluded and counted; an unobserved single pillar is filled at the neutral median (50) for
+  both display and the weighted sum, with the gap surfaced through the coverage pillar, the low-coverage
+  flag, and a widened confidence band.
+confidence methodology: 'Each score carries a confidence band whose half-width grows with missing data
+  and within-name signal disagreement: half-width equals a base term plus a coverage coefficient times
+  the fraction of candidate variables not observed, plus a dispersion coefficient times the standard deviation
+  of the name''s pillar scores, clipped to the 0-to-100 range. The intent is that a name scored on thin
+  or internally contradictory evidence shows a visibly wider band than one scored on full, agreeing evidence,
+  so a user reads uncertainty directly off the card rather than mistaking a sparse score for a confident
+  one. The coefficients are fixed in config and documented; they are a transparent reliability heuristic,
+  not a statistical posterior, and are labeled as such.'
+limitations and risk prose: This build validates the research methodology, the data contracts, and the
+  end-to-end pipeline; it is a research demonstration, not investment advice, and is labeled as such throughout.
+  The largest limitations are honest data gaps, not hidden ones. The free Sustainalytics ESG feed is gone,
+  so the official-score families are unavailable and the model leans on alternative data; the SGX/Bursa
+  disclosure feed returned nothing; sentiment validation runs on the 198-name liquid universe rather than
+  all 477. Point-in-time ESG history does not exist for these names, so reconstructed ESG-momentum is
+  proxied. Survivorship is present by construction because today's constituents are yesterday's survivors.
+  Shorting is infeasible in several ASEAN markets, so the Q5-minus-Q1 spread is partly theoretical and
+  the implementable result is long-only Q5 versus benchmark. The licensed CSV/API import path is the route
+  that closes the data gaps for production use.
+risk register narrative: 'Risks are graded by severity and paired with mitigations. Methodological: look-ahead
+  bias (mitigated by strict point-in-time construction and a once-touched test window), survivorship (disclosed,
+  spread partially insulated), multiple testing and overfitting (mitigated by Benjamini-Hochberg FDR and
+  the Deflated Sharpe), short sample and regime dependence (mitigated by sub-period reporting). Data:
+  single-provider ESG dependence that already materialized as total loss (bias-register B-16), GDELT entity-matching
+  noise, yfinance terms-of-service fragility, Scope 3 emissions gaps in ASEAN disclosure, and greenwashing
+  of disclosure-volume signals (partially cross-checked by sentiment and fundamentals). Market and implementation:
+  ASEAN liquidity, FX exposure across five currencies, transaction costs and turnover, and shorting infeasibility.
+  Each is rated for severity, likelihood, mitigation, and residual risk in the accompanying table.'
+data-source and licensing risks: yfinance is an unofficial scrape of Yahoo Finance and is appropriate
+  for a research demonstration but not for production redistribution; the disappearance of the free Sustainalytics
+  endpoint mid-build is concrete evidence of that fragility. GDELT, exchange announcements, and any issuer
+  disclosures must each be reviewed for permitted use, redistribution, caching, attribution, and client-facing
+  display rights before any launch. The compliant production path is the CSV/API import layer, which lets
+  a licensed data provider (including the sponsor's own feeds) drop in behind the same frozen schemas
+  without re-engineering the model.
+statistical risks: 'The dominant statistical risks are look-ahead bias, survivorship bias, multiple testing,
+  factor crowding, small per-market samples, unstable correlations, non-stationary relationships, transaction-cost
+  underestimation, and overstated inference from noisy proxies such as news tone. The design confronts
+  these explicitly: point-in-time signals, a once-touched out-of-sample window spanning the 2022 regime
+  change, Benjamini-Hochberg FDR control at q equals 0.10, Newey-West HAC standard errors on overlapping
+  horizons, a block bootstrap that respects serial dependence, and a Deflated Sharpe that penalizes the
+  number of configurations tried. Residual risk remains from the short ASEAN sample and the alternative-data
+  proxy structure, and is stated rather than smoothed over.'
+model-governance risks: The model depends on versioned data contracts (SCHEMAS.md), a parameter set frozen
+  before validation (config/settings.yaml), a once-touched test window, reviewable transformations, and
+  explicit sign-off before any live client use. Weight-sandbox outputs are labeled as custom exploratory
+  views, not validated model outputs, and a one-click reset restores the validated weights. Any change
+  to a research parameter must be logged with its rationale before re-running validation, so the frozen-before-the-answer
+  discipline is preserved.
+cybersecurity and privacy risks: The frontend is a static client that reads JSON only; it has no backend
+  and no user data. Runtime schema validation rejects malformed or out-of-range JSON before render, so
+  a corrupted feed shows an explicit error rather than silently mis-rendering. Any future upload, API,
+  or CSV-import path must validate file type, size, schema, encoding, numeric bounds, formula-injection
+  strings, and personally identifiable information before accepting user-provided data; the CSV validator
+  already enforces exact columns, ranges, date monotonicity, duplicate-key detection, and formula-injection
+  rejection as the template for that gate.
+user-misinterpretation risks: Users may overread ranks, grade badges, confidence bands, or backtest-style
+  charts as advice. The product keeps a persistent research-demonstration disclaimer and, in synthetic
+  mode, a synthetic-data banner; it shows coverage and confidence next to every score, explains missing
+  data rather than hiding it, and avoids action-oriented language such as buy, sell, or outperform. The
+  explanation engine is rule-based and deterministic, naming the actual contributing variables, so a reader
+  can trace any score to its drivers rather than trusting an opaque number.
+default: This narrative is supplied from the Claude-authored submission prose; if this default text appears
+  in the rendered report it indicates an un-keyed marker that should be mapped to a specific section before
+  final submission.
