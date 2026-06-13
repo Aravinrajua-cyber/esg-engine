@@ -1,0 +1,3 @@
+# columns: ticker=uppercase ticker; fiscal_date=ISO YYYY-MM-DD fiscal period date; period=annual|quarter; revenue/capex/total_debt/interest_expense/operating_cash_flow/depreciation=numeric nullable statement values
+ticker,fiscal_date,period,revenue,capex,total_debt,interest_expense,operating_cash_flow,depreciation
+DEMO1.SI,2025-12-31,annual,1250000000,90000000,420000000,21000000,180000000,35000000
