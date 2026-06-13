@@ -1,0 +1,36 @@
+ESG Momentum Engine - Submission URL
+=====================================
+
+STATUS: DEPLOYMENT PENDING - no live URL yet.
+
+`vercel --prod` could NOT be run automatically in this environment:
+  - the Vercel CLI is not installed (not on PATH, not in node_modules),
+  - there is no VERCEL_TOKEN, and Vercel is not logged in,
+  - `vercel login` is an interactive browser/email OAuth flow that cannot run
+    in this non-interactive sandbox.
+
+A submission URL must be a real, working link, so none has been invented here.
+
+TO DEPLOY AND CAPTURE THE URL (run locally, in a terminal with your Vercel login):
+
+    cd C:\Hackathon\esg-engine\site
+    npm i -g vercel        # one-time, if not already installed
+    vercel login           # one-time, interactive
+    vercel --prod          # deploys; prints the production URL
+
+Then replace the line below with the printed URL:
+
+    LIVE_URL: <paste https://...vercel.app here after deploying>
+
+----------------------------------------------------------------------
+LOCAL VERIFICATION ALREADY DONE (2026-06-13):
+  - `npm run dev`   -> Vite ready, HTTP 200, app shell served.
+  - `npm run build` -> success, zero errors; dist/ populated
+                       (index.html, assets/index-*.css ~14 KB, assets/index-*.js ~229 KB,
+                        site_data/*.json). No Plotly/recharts in the bundle.
+  - Served dist/ on :8000 -> all assets HTTP 200.
+  - No purple/blue/violet anywhere in the built bundle.
+  - #c8ff00 accent scoped to score rings, active/selected states, and chart highlights only.
+  - All 5 Model Performance sections, the screener/leaderboard, and all navbar
+    anchors (#leaderboard, #model-performance, #methodology, #risks) present in the bundle.
+  - Browser pixel-level QA still pending (no display in the build environment).

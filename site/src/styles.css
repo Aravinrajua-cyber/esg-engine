@@ -80,9 +80,9 @@ select:focus-visible,
   position: fixed;
   z-index: 29;
   top: 32px; left: 0; right: 0;
-  background: #2a1414;
-  border-bottom: 1px solid #5a2a2a;
-  color: #e8b0b0;
+  background: var(--elevated);
+  border-bottom: 1px solid var(--signal);
+  color: var(--text);
   padding: 4px 12px;
   font-size: 12px;
   text-align: center;
