@@ -1,0 +1,87 @@
+{
+  "brand": "ESG Momentum Engine",
+  "nav": {
+    "leaderboard": "Leaderboard",
+    "methodology": "Methodology",
+    "results": "Results",
+    "risks": "Risks"
+  },
+  "hero": {
+    "eyebrow": "CGS International ESG Intelligence",
+    "title": "ESG scores are slow. The signal isn't.",
+    "lead": "A client-side research demo ranking ASEAN companies by early ESG momentum, confidence, and data coverage.",
+    "statTitle": "Net annual Q5 minus Q1 spread from the model headline artifact.",
+    "statLabel": "net Q5-Q1 annual spread"
+  },
+  "idea": {
+    "eyebrow": "The idea",
+    "title": "Find the movement before the score catches up.",
+    "cards": [
+      {
+        "title": "Lagging scores",
+        "body": "Static ESG ratings can update after market attention has already shifted.",
+        "path": "M0 48 C24 44 34 16 58 18 C78 20 84 42 112 28"
+      },
+      {
+        "title": "Alternative signals",
+        "body": "News tone, disclosure behavior, and transition proxies update at a faster tempo.",
+        "path": "M0 44 L28 30 L54 36 L80 12 L112 20"
+      },
+      {
+        "title": "Early entry",
+        "body": "The model ranks improving companies before they look obvious on static scorecards.",
+        "path": "M0 52 L112 12 M76 12 L112 12 L112 48"
+      }
+    ]
+  },
+  "leaderboard": {
+    "titleSuffix": "companies, ranked by momentum.",
+    "searchPlaceholder": "Search company or ticker",
+    "weightSandboxTitle": "Weight sandbox",
+    "weightSandboxBody": "Data coverage is display-only and excluded from the weighted score.",
+    "customWeightsBanner": "Custom weights - rankings differ from the validated model",
+    "resetLabel": "Reset"
+  },
+  "methodology": {
+    "eyebrow": "Methodology",
+    "title": "Transparent variables, composites, and validation.",
+    "buttonLabel": "How to read this",
+    "explainer": "Each chart reads from the JSON contracts. Placeholder prose remains intentionally brief until Claude supplies final research text.",
+    "validatedWeightsPrefix": "Validated weights:"
+  },
+  "results": {
+    "eyebrow": "Results",
+    "title": "Interactive model outputs.",
+    "metrics": {
+      "deflatedSharpe": "Deflated Sharpe",
+      "testIc": "Test IC",
+      "netSharpe": "Net Sharpe"
+    },
+    "backtestTitle": "Q5 vs Q1 vs benchmark"
+  },
+  "risks": {
+    "eyebrow": "Risks",
+    "title": "Limits are part of the product.",
+    "cards": [
+      {
+        "severity": "Severity 1",
+        "title": "Data coverage",
+        "body": "Placeholder risk text for Claude to replace with final report language."
+      },
+      {
+        "severity": "Severity 2",
+        "title": "Market microstructure",
+        "body": "Placeholder risk text for Claude to replace with final report language."
+      },
+      {
+        "severity": "Severity 3",
+        "title": "Model drift",
+        "body": "Placeholder risk text for Claude to replace with final report language."
+      }
+    ]
+  },
+  "footer": {
+    "disclaimer": "Research demonstration - not investment advice.",
+    "sourceNote": "Sources, citations, and retrieval dates are placeholders for Claude prose. Built for PolyFinTech100 2026 | CGS International ESG Intelligence."
+  }
+}

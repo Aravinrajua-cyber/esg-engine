@@ -1,6 +1,7 @@
 import { ArrowDown, BarChart3, Moon, RotateCcw, Search, Sun } from "lucide-react";
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { loadBacktest, loadCompanies, loadIcTable, loadPlacebo, LoadIssue } from "./data";
+import siteContent from "./site_content.json";
 import { BacktestFeed, Company, CompaniesFeed, IcRow, PillarKey, PlaceboFeed } from "./types";
 
 const Plot = React.lazy(() => import("./Plot"));
@@ -106,12 +107,12 @@ export default function App() {
         </div>
       )}
       <header className="topbar">
-        <a href="#hero" className="brand">ESG Momentum Engine</a>
+        <a href="#hero" className="brand">{siteContent.brand}</a>
         <nav>
-          <a href="#leaderboard">Leaderboard</a>
-          <a href="#methodology">Methodology</a>
-          <a href="#results">Results</a>
-          <a href="#risks">Risks</a>
+          <a href="#leaderboard">{siteContent.nav.leaderboard}</a>
+          <a href="#methodology">{siteContent.nav.methodology}</a>
+          <a href="#results">{siteContent.nav.results}</a>
+          <a href="#risks">{siteContent.nav.risks}</a>
           <button className="iconButton" title="Toggle theme" onClick={() => setDark((v) => !v)}>
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
@@ -126,8 +127,8 @@ export default function App() {
         <Risks />
       </main>
       <footer>
-        <p>Research demonstration - not investment advice.</p>
-        <p>Sources, citations, and retrieval dates are placeholders for Claude prose. Built for PolyFinTech100 2026 | CGS International ESG Intelligence.</p>
+        <p>{siteContent.footer.disclaimer}</p>
+        <p>{siteContent.footer.sourceNote}</p>
       </footer>
     </>
   );
@@ -174,12 +175,12 @@ function Hero({ feed }: { feed: CompaniesFeed }) {
   return (
     <section id="hero" className="hero reveal is-visible" ref={ref}>
       <div>
-        <p className="eyebrow">CGS International ESG Intelligence</p>
-        <h1>ESG scores are slow. The signal isn't.</h1>
-        <p className="lead">A client-side research demo ranking ASEAN companies by early ESG momentum, confidence, and data coverage.</p>
-        <div className="heroStat" title="Net annual Q5 minus Q1 spread from the model headline artifact.">
+        <p className="eyebrow">{siteContent.hero.eyebrow}</p>
+        <h1>{siteContent.hero.title}</h1>
+        <p className="lead">{siteContent.hero.lead}</p>
+        <div className="heroStat" title={siteContent.hero.statTitle}>
           <strong>{value.toFixed(1)}%</strong>
-          <span>net Q5-Q1 annual spread</span>
+          <span>{siteContent.hero.statLabel}</span>
         </div>
       </div>
       <a className="scrollCue" href="#idea" aria-label="Scroll to the idea"><ArrowDown size={20} /></a>
@@ -191,18 +192,14 @@ function Idea() {
   const ref = useReveal<HTMLElement>();
   return (
     <section id="idea" ref={ref} className="section reveal">
-      <p className="eyebrow">The idea</p>
-      <h2>Find the movement before the score catches up.</h2>
+      <p className="eyebrow">{siteContent.idea.eyebrow}</p>
+      <h2>{siteContent.idea.title}</h2>
       <div className="ideaGrid">
-        {[
-          ["Lagging scores", "Static ESG ratings can update after market attention has already shifted.", "M0 48 C24 44 34 16 58 18 C78 20 84 42 112 28"],
-          ["Alternative signals", "News tone, disclosure behavior, and transition proxies update at a faster tempo.", "M0 44 L28 30 L54 36 L80 12 L112 20"],
-          ["Early entry", "The model ranks improving companies before they look obvious on static scorecards.", "M0 52 L112 12 M76 12 L112 12 L112 48"]
-        ].map(([title, body, d]) => (
-          <article className="ideaPanel" key={title}>
-            <svg viewBox="0 0 112 64" aria-hidden="true"><path d={d} /></svg>
-            <h3>{title}</h3>
-            <p>{body}</p>
+        {siteContent.idea.cards.map((card) => (
+          <article className="ideaPanel" key={card.title}>
+            <svg viewBox="0 0 112 64" aria-hidden="true"><path d={card.path} /></svg>
+            <h3>{card.title}</h3>
+            <p>{card.body}</p>
           </article>
         ))}
       </div>
@@ -256,9 +253,9 @@ function Leaderboard({ feed }: { feed: CompaniesFeed }) {
   return (
     <section id="leaderboard" className="leaderboard section">
       <p className="eyebrow">Leaderboard</p>
-      <h2>{feed.universe_size} companies, ranked by momentum.</h2>
+      <h2>{feed.universe_size} {siteContent.leaderboard.titleSuffix}</h2>
       <div className="toolbar">
-        <label className="search"><Search size={18} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search company or ticker" /></label>
+        <label className="search"><Search size={18} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={siteContent.leaderboard.searchPlaceholder} /></label>
         <Select label="Country" value={country} setValue={setCountry} options={countries} />
         <Select label="Sector" value={sector} setValue={setSector} options={sectors} />
         <Select label="Grade" value={grade} setValue={setGrade} options={grades} />
@@ -280,10 +277,10 @@ function WeightSandbox({ weights, setWeights, defaults, custom }: { weights: Rec
   return (
     <aside className="sandbox">
       <div>
-        <h3>Weight sandbox</h3>
-        <p>Data coverage is display-only and excluded from the weighted score.</p>
+        <h3>{siteContent.leaderboard.weightSandboxTitle}</h3>
+        <p>{siteContent.leaderboard.weightSandboxBody}</p>
       </div>
-      {custom && <strong className="customBanner">Custom weights - rankings differ from the validated model</strong>}
+      {custom && <strong className="customBanner">{siteContent.leaderboard.customWeightsBanner}</strong>}
       <div className="sliders">
         {PILLARS.map((key) => (
           <label key={key} title="Changes recompute the client-side weighted score.">
@@ -293,7 +290,7 @@ function WeightSandbox({ weights, setWeights, defaults, custom }: { weights: Rec
           </label>
         ))}
       </div>
-      <button className="secondary" onClick={() => setWeights(defaults)}><RotateCcw size={16} /> Reset</button>
+      <button className="secondary" onClick={() => setWeights(defaults)}><RotateCcw size={16} /> {siteContent.leaderboard.resetLabel}</button>
     </aside>
   );
 }
@@ -380,17 +377,17 @@ function Methodology({ feed, icRows, placebo }: { feed: CompaniesFeed; icRows: I
   const [open, setOpen] = useState(false);
   return (
     <section id="methodology" ref={ref} className="section reveal">
-      <p className="eyebrow">Methodology</p>
-      <h2>Transparent variables, composites, and validation.</h2>
-      <button className="secondary" onClick={() => setOpen((v) => !v)}>How to read this</button>
-      {open && <p className="measure">Each chart reads from the JSON contracts. Placeholder prose remains intentionally brief until Claude supplies final research text.</p>}
+      <p className="eyebrow">{siteContent.methodology.eyebrow}</p>
+      <h2>{siteContent.methodology.title}</h2>
+      <button className="secondary" onClick={() => setOpen((v) => !v)}>{siteContent.methodology.buttonLabel}</button>
+      {open && <p className="measure">{siteContent.methodology.explainer}</p>}
       <div className="chartGrid">
         <Suspense fallback={<div className="chartSkeleton" />}>
           <Plot title="Validation IC" data={[{ type: "bar", x: icRows.map((r) => r.label || r.variable), y: icRows.map((r) => r.ic_3m), marker: { color: "#3B3BFF" } }]} />
           <Plot title="Placebo" data={[{ type: "bar", x: placebo?.hist_bins || [0], y: placebo?.hist_counts || [1], marker: { color: "#BFC0FF" } }]} shapes={placebo ? [{ type: "line", x0: placebo.realized_spread, x1: placebo.realized_spread, y0: 0, y1: 1, yref: "paper", line: { color: "#3B3BFF", width: 3 } }] : []} />
         </Suspense>
       </div>
-      <p className="measure">Validated weights: {PILLARS.map((key) => `${labelFor(key)} ${feed.model.validated_weights[key].toFixed(2)}`).join(", ")}.</p>
+      <p className="measure">{siteContent.methodology.validatedWeightsPrefix} {PILLARS.map((key) => `${labelFor(key)} ${feed.model.validated_weights[key].toFixed(2)}`).join(", ")}.</p>
     </section>
   );
 }
@@ -399,16 +396,16 @@ function Results({ feed, backtest }: { feed: CompaniesFeed; backtest: BacktestFe
   const ref = useReveal<HTMLElement>();
   return (
     <section id="results" ref={ref} className="section reveal">
-      <p className="eyebrow">Results</p>
-      <h2>Interactive model outputs.</h2>
+      <p className="eyebrow">{siteContent.results.eyebrow}</p>
+      <h2>{siteContent.results.title}</h2>
       <div className="stats">
-        <Metric label="Deflated Sharpe" value={feed.model.headline.deflated_sharpe.toFixed(2)} />
-        <Metric label="Test IC" value={feed.model.headline.test_ic.toFixed(3)} />
-        <Metric label="Net Sharpe" value={feed.model.headline.sharpe_net.toFixed(2)} />
+        <Metric label={siteContent.results.metrics.deflatedSharpe} value={feed.model.headline.deflated_sharpe.toFixed(2)} />
+        <Metric label={siteContent.results.metrics.testIc} value={feed.model.headline.test_ic.toFixed(3)} />
+        <Metric label={siteContent.results.metrics.netSharpe} value={feed.model.headline.sharpe_net.toFixed(2)} />
       </div>
       {backtest && (
         <Suspense fallback={<div className="chartSkeleton" />}>
-          <Plot title="Q5 vs Q1 vs benchmark" data={[
+          <Plot title={siteContent.results.backtestTitle} data={[
             { type: "scatter", mode: "lines", name: "Q5", x: backtest.dates, y: backtest.q5 },
             { type: "scatter", mode: "lines", name: "Q1", x: backtest.dates, y: backtest.q1 },
             { type: "scatter", mode: "lines", name: "Benchmark", x: backtest.dates, y: backtest.benchmark },
@@ -425,7 +422,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function Risks() {
-  return <section id="risks" className="section risks"><p className="eyebrow">Risks</p><h2>Limits are part of the product.</h2>{["Data coverage", "Market microstructure", "Model drift"].map((risk, index) => <article key={risk}><strong>Severity {index + 1}</strong><h3>{risk}</h3><p>Placeholder risk text for Claude to replace with final report language.</p></article>)}</section>;
+  return <section id="risks" className="section risks"><p className="eyebrow">{siteContent.risks.eyebrow}</p><h2>{siteContent.risks.title}</h2>{siteContent.risks.cards.map((risk) => <article key={risk.title}><strong>{risk.severity}</strong><h3>{risk.title}</h3><p>{risk.body}</p></article>)}</section>;
 }
 
 function unique(values: string[]) {
