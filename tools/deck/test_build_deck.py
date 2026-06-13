@@ -17,4 +17,4 @@ def test_sample_yaml_generates_expected_slide_count(tmp_path):
     deck = Presentation(output)
 
     assert output.exists()
-    assert len(deck.slides) == len(content["slides"]) == 12
+    assert len(deck.slides) == len(content["slides"]) == 7

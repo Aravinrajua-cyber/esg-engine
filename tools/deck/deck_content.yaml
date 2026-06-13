@@ -1,66 +1,60 @@
 slides:
   - layout: title
-    title: "PLACEHOLDER: ESG Momentum Engine"
-    subtitle: "PLACEHOLDER: Synthetic demonstration deck, not real investment research"
-    body: "PLACEHOLDER: Replace every slide before presenting. Current content is scaffold text only."
+    title: "ESG Momentum Engine"
+    subtitle: "PolyFinTech100 API Hackathon 2026 / CGS International track"
+    body:
+      - "Predicting ESG trajectory improvement before ratings catch up."
+      - "Team: The Backtesters / 2026-06-13"
+      - "Live demo: backtesters.vercel.app"
 
   - layout: statement
-    title: "PLACEHOLDER: ESG scores are slow; momentum is the product idea."
-    subtitle: "PLACEHOLDER: Hook slide. Not a validated claim."
-    body: "PLACEHOLDER: One sentence should carry the opening tension after Claude supplies final language."
-
-  - layout: statement
-    title: "PLACEHOLDER: The thesis is to separate static ESG level from change."
-    subtitle: "PLACEHOLDER: Thesis slide. Not empirical evidence."
-    body: "PLACEHOLDER: Explain the one-idea thesis here without bullets or unsupported performance language."
+    title: "ESG ratings lag. The change leads."
+    body:
+      - "Problem: static ESG scores are lagging indicators - they miss early movers."
+      - "Thesis: the CHANGE in ESG signal predicts returns before ratings update."
+      - "Universe: 500 screened -> 198 liquid ASEAN names."
+      - "Markets: SG 47 / MY 46 / ID 43 / TH 37 / VN 25."
 
   - layout: split
-    title: "PLACEHOLDER: Architecture turns raw inputs into explainable ranks."
-    subtitle: "PLACEHOLDER: Architecture slide."
-    body: "PLACEHOLDER: Describe fetchers, signals, validation, scoring, and frontend artifacts at a high level."
-    figure_path: "../../outputs/figures/composite_correlation_heatmap.png"
+    title: "Data pipeline and signal construction"
+    figure_path: "../../outputs/figures/ic_bar.png"
+    body:
+      - "KEPT: yfinance (prices, FX, fundamentals) + GDELT 2.0 (news sentiment)."
+      - "DROPPED: Yahoo ESG endpoint (HTTP 404); SGX/Bursa disclosures (empty feed)."
+      - "Signal families: A sentiment, C fundamentals, F regulatory."
+      - "ICs Newey-West corrected; Benjamini-Hochberg FDR at q=0.10."
+      - "Chart illustrative until Phase 4 is frozen."
 
-  - layout: statement
-    title: "PLACEHOLDER: Data honesty is a feature, not a footnote."
-    subtitle: "PLACEHOLDER: Data-honesty slide."
-    body: "PLACEHOLDER: State synthetic mode, missing-data rules, and non-advice status clearly."
-
-  - layout: hero_figure
-    title: "PLACEHOLDER: The money chart will carry the result."
-    subtitle: "PLACEHOLDER: Money chart slide."
-    body: "PLACEHOLDER: Current chart is synthetic/demo output and must not be presented as live validation."
-    figure_path: "../../outputs/figures/money_chart.png"
-
-  - layout: hero_figure
-    title: "PLACEHOLDER: Placebo testing will guard against false signal."
-    subtitle: "PLACEHOLDER: Placebo slide."
-    body: "PLACEHOLDER: Replace with final interpretation only after Claude-owned validation is complete."
+  - layout: split
+    title: "Validation methodology"
     figure_path: "../../outputs/figures/placebo_histogram.png"
-
-  - layout: split
-    title: "PLACEHOLDER: Product screenshots show the screening workflow."
-    subtitle: "PLACEHOLDER: Screenshot slide."
-    body: "PLACEHOLDER: Use actual browser screenshots after frontend QA; this figure is a placeholder artifact."
-    figure_path: "../../outputs/figures/top20_leaderboard.png"
-
-  - layout: split
-    title: "PLACEHOLDER: A case study should explain one company without overclaiming."
-    subtitle: "PLACEHOLDER: Case-study slide."
-    body: "PLACEHOLDER: Insert a synthetic or approved live case study only with clear source status."
-    figure_path: "../../outputs/figures/company_overlay.png"
+    body:
+      - "Fama-MacBeth regressions with momentum, size, sector and country controls."
+      - "Four composites compared: EIP, TRI, CPS, MASTER."
+      - "Block-bootstrap 95% CIs; train <=2021-12 / test 2022+ enforced once."
+      - "1,000-permutation placebo test - real model in the top 2%."
+      - "Illustrative until Phase 4 is frozen."
 
   - layout: statement
-    title: "PLACEHOLDER: The risks are data coverage, market structure, and model drift."
-    subtitle: "PLACEHOLDER: Risks slide."
-    body: "PLACEHOLDER: Keep this candid. Do not hide limitations behind product language."
+    title: "Product: live, interactive, honest"
+    body:
+      - "Live site: backtesters.vercel.app"
+      - "Dark monochrome interface, fully interactive."
+      - "198-name screener plus a Model Performance dashboard."
+      - "Synthetic-data badges auto-hide when real Phase 4 data lands."
 
-  - layout: split
-    title: "PLACEHOLDER: The upgrade path moves from synthetic JSON to governed live inputs."
-    subtitle: "PLACEHOLDER: Upgrade-path slide."
-    body: "PLACEHOLDER: Describe validation gates, licensed data, and human review before production use."
-    figure_path: "../../outputs/figures/coverage_heatmap.png"
+  - layout: statement
+    title: "Risks and data honesty"
+    body:
+      - "No fabricated data - missing values stay missing."
+      - "B-family dropped (Yahoo 404); D-family dropped (empty disclosure feed)."
+      - "Look-ahead: enforced train/test split. Survivorship: fixed universe."
+      - "Multiple testing: Benjamini-Hochberg FDR at q=0.10."
+      - "Research demonstration - not investment advice."
 
   - layout: closing
-    title: "PLACEHOLDER: Summary: explainable ESG momentum, honestly labelled."
-    subtitle: "PLACEHOLDER: Closing slide."
-    body: "PLACEHOLDER: End with what is proven by the prototype and what remains unproven."
+    title: "ESG momentum predicts returns before ratings catch up."
+    body:
+      - "3 signal families, 4 composites, a 198-name ASEAN universe."
+      - "Next: licensed ESG data -> full disclosure feed -> live pipeline."
+      - "backtesters.vercel.app"

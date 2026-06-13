@@ -61,7 +61,7 @@ def test_assembler_builds_submission_from_mock_phase4(tmp_path: Path):
     assert "sentiment_dynamics" in table_text
 
     deck = Presentation(result.deck_path)
-    assert len(deck.slides) == 12
+    assert len(deck.slides) == 7
 
     readme = result.readme_path.read_text(encoding="utf-8")
     assert "ESG_Momentum_Engine_Report.docx" in readme
