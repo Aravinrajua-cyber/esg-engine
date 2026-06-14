@@ -204,3 +204,29 @@ run_validation.py --discovery <path> (restrict ALL Phase 4 stats to that subset;
 scored on full universe downstream); phase4_results.pkl now written alongside validation_results.json.
 GDELT discovery fetch launched on the 198 liquid names (39 already cached, 159 remaining; full-477
 fetch stopped — cache preserved). Phase 3->4 + freeze runs the moment sentiment lands.
+
+## 2026-06-14 — PHASE 4 FROZEN on the real discovery universe (honest, sober result)
+
+GDELT discovery fetch reached 196/198 cached (185 with sentiment, 180 with >=36 months).
+Aggregated -> sentiment_monthly; ran signals -> run_validation --discovery (198 liquid names,
+SG47/MY46/ID43/TH37/VN25). Test window (2022+) touched once. Frozen to
+data/processed/{validation_results.json, phase4_results.pkl}; scored live -> outputs/site_data.
+
+**Frozen headline (REAL):**
+- FDR survivors (q=0.10): **A3 (attention trend), A4 (tone dispersion) only.**
+  A1 (sentiment velocity — the variable the pitch called the "core thesis variable") did NOT
+  survive (IC 0.014, t_NW 0.78). C-family and F1 did not survive.
+- Winner: MASTER_rank_agg (9 configs trialed).
+- Net Q5-Q1 spread: **+6.81%/yr, but 95% block-bootstrap CI [-1.75%, +15.79%] — includes zero.**
+  Not statistically significant net of the ASEAN cost matrix.
+- Gross spread +9.07%/yr; placebo p=0.003 on GROSS (the ranking carries gross information).
+- Deflated Sharpe 0.753; net Sharpe 0.53; Sortino 0.85; max DD -17%; Calmar 0.40.
+- Out-of-sample composite test IC ~ -0.008 (essentially zero/slightly negative).
+
+**Honest reading:** on real ASEAN data the ESG-momentum edge is a weak, gross-only,
+attention/tone-dispersion sentiment signal. Net of realistic costs it is not statistically
+distinguishable from zero, and there is no positive out-of-sample IC. This is a credible NULL/weak
+result, not the strong effect the synthetic dress-rehearsal showed (that test had a planted factor).
+The promotional copy on the deck/site ("predicts returns", "top 2%", "MASTER outperforms") overstates
+this and must be revised to honest framing before any public redeploy. Auto-redeploy was deliberately
+NOT performed for that reason (and the Vercel token is invalid regardless).

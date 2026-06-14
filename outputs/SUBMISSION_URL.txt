@@ -1,38 +1,9 @@
-ESG Momentum Engine - Submission URL
-=====================================
+https://backtesters.vercel.app
 
-STATUS: DEPLOYMENT PENDING - no live URL yet (Vercel auth required).
+ESG Momentum Engine — PolyFinTech100 API Hackathon 2026 (The Backtesters)
+Live production deployment (Vercel).
 
-`vercel --prod` was attempted (2026-06-13). The CLI is reachable via npx
-(Vercel CLI 54.13.0), but the deploy failed at authentication:
-
-    Error: The specified token is not valid. Use `vercel login` to generate a new token.
-
-`vercel login` is an interactive browser/email OAuth flow that cannot run in this
-non-interactive build environment. A submission URL must be a real, working link,
-so none has been invented here.
-
-TO DEPLOY AND CAPTURE THE URL — two options:
-
-  A) In THIS Claude Code session, authenticate interactively, then ask me to deploy:
-        ! npx vercel login        # opens the interactive login in your session
-     then tell me to run the deploy and I will paste the real URL here.
-
-  B) From your own terminal:
-        cd C:\Hackathon\esg-engine\site
-        npx vercel login          # one-time, interactive
-        npx vercel --prod         # deploys; prints the production URL
-
-Then replace the line below with the printed URL:
-
-    LIVE_URL: <paste https://...vercel.app here after deploying>
-
-----------------------------------------------------------------------
-DEPLOY-READY STATE VERIFIED (2026-06-13):
-  - npm run build -> success, zero errors; dist/ populated.
-  - Model Performance "Illustrative Data" badges now auto-hide when
-    companies.json data_mode === "live" (still shown now: data is synthetic).
-  - pytest: 97 passed / 3 skipped.
-  - No purple/blue in the bundle; #c8ff00 scoped to rings/active/chart highlights.
-  - NOTE: chart numbers are still illustrative synthetic placeholders — Phase 4 is
-    NOT yet frozen (GDELT discovery fetch incomplete). Do not present these as real.
+Note: the live site currently shows illustrative synthetic demonstration data — the
+"Illustrative Data" badges and the SYNTHETIC DEMONSTRATION DATA banner are visible.
+It auto-switches to real figures (badges auto-hide) once frozen Phase 4 results
+replace site_data and data_mode becomes "live".
