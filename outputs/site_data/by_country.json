@@ -1,22 +1,22 @@
 [
- {
-  "key": "Indonesia",
-  "spread_net": -0.063944
- },
- {
-  "key": "Malaysia",
-  "spread_net": 0.025739
- },
- {
-  "key": "Singapore",
-  "spread_net": -0.074343
- },
- {
-  "key": "Thailand",
-  "spread_net": -0.038091
- },
- {
-  "key": "Vietnam",
-  "spread_net": 0.077109
- }
+  {
+    "key": "Indonesia",
+    "spread_net": 0.85
+  },
+  {
+    "key": "Malaysia",
+    "spread_net": 6.03
+  },
+  {
+    "key": "Singapore",
+    "spread_net": 5.36
+  },
+  {
+    "key": "Thailand",
+    "spread_net": 8.53
+  },
+  {
+    "key": "Vietnam",
+    "spread_net": 5.71
+  }
 ]

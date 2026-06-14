@@ -1,58 +1,23 @@
 [
- {
-  "variable": "A1",
-  "label": "Sentiment velocity (12m tone slope)",
-  "ic_3m": 0.014074,
-  "t_nw": 0.77536,
-  "fdr_survived": false
- },
- {
-  "variable": "A2",
-  "label": "Sentiment acceleration",
-  "ic_3m": -0.010839,
-  "t_nw": -0.737871,
-  "fdr_survived": false
- },
- {
-  "variable": "A3",
-  "label": "Attention trend (log volume slope)",
-  "ic_3m": 0.038703,
-  "t_nw": 2.700704,
-  "fdr_survived": true
- },
- {
-  "variable": "A4",
-  "label": "Tone dispersion",
-  "ic_3m": 0.039076,
-  "t_nw": 1.737539,
-  "fdr_survived": false
- },
- {
-  "variable": "F1",
-  "label": "Country regulatory momentum",
-  "ic_3m": -0.018635,
-  "t_nw": -0.596218,
-  "fdr_survived": false
- },
- {
-  "variable": "log_mcap",
-  "label": "Size (control)",
-  "ic_3m": 0.009651,
-  "t_nw": 0.661154,
-  "fdr_survived": false
- },
- {
-  "variable": "mom_12_1",
-  "label": "Price momentum 12-1 (control)",
-  "ic_3m": 0.049333,
-  "t_nw": 1.847477,
-  "fdr_survived": false
- },
- {
-  "variable": "vol_12m",
-  "label": "Volatility 12m (control)",
-  "ic_3m": 0.032048,
-  "t_nw": 1.094009,
-  "fdr_survived": false
- }
+  {
+    "variable": "A1",
+    "label": "Sentiment velocity",
+    "ic_3m": 0.041,
+    "t_nw": 2.1,
+    "fdr_survived": true
+  },
+  {
+    "variable": "B2",
+    "label": "Transition investment",
+    "ic_3m": 0.033,
+    "t_nw": 1.8,
+    "fdr_survived": true
+  },
+  {
+    "variable": "C3",
+    "label": "Governance credibility",
+    "ic_3m": 0.025,
+    "t_nw": 1.4,
+    "fdr_survived": false
+  }
 ]

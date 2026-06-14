@@ -1,108 +1,37 @@
-// Illustrative synthetic data for the Model Performance charts, shaped to match what the model
-// produces (IC 0.02-0.08, composite Deflated Sharpe ~1.1). Every chart shows an "Illustrative Data"
-// badge; swap these arrays for frozen Phase 4 outputs (validation_results.json / phase4_results.pkl)
-// when the run is frozen. The signal-decision waterfall and the universe funnel use REAL documented
-// numbers, not synthetic.
+// REAL frozen Phase 4 values (2026-06-14), generated from data/processed/validation_results.json
+// + outputs/site_data/backtest.json. data_mode "live" hides the illustrative badges.
+// FDR survivors: ['A3', 'A4'] (A1 sentiment-velocity did NOT survive). Net Q5-Q1 +6.81%/yr,
+// 95% CI [-1.75%, 15.79%] straddles zero;
+// gross placebo p=0.003; Deflated Sharpe 0.753.
 
-// Whether the charts should show the "Illustrative Data" badge. Driven by companies.json's
-// data_mode at runtime: synthetic (or anything not "live") => illustrative; "live" => real,
-// so the badges auto-hide once frozen Phase 4 artifacts replace the values below.
 export function isIllustrative(dataMode: string): boolean {
   return dataMode !== "live";
 }
 
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+export const IC_THRESHOLD = 0.03; // reference line; A3/A4 cleared FDR q=0.10, A1/C/F did not
 
-const MONTHS: string[] = [];
-for (let y = 2020; y <= 2024; y++) for (let m = 1; m <= 12; m++) MONTHS.push(`${y}-${String(m).padStart(2, "0")}`);
-const N = MONTHS.length; // 60
+export interface ICPoint { month: string; A: number | null; C: number | null; F: number | null; }
+export const icTimeline: ICPoint[] = [{"month": "2015-01", "A": null, "C": null, "F": 0.4468}, {"month": "2015-02", "A": null, "C": null, "F": 0.4181}, {"month": "2015-03", "A": null, "C": null, "F": 0.1541}, {"month": "2015-04", "A": null, "C": null, "F": -0.0743}, {"month": "2015-05", "A": null, "C": null, "F": -0.1844}, {"month": "2015-06", "A": null, "C": null, "F": -0.0319}, {"month": "2015-07", "A": null, "C": null, "F": -0.0289}, {"month": "2015-08", "A": null, "C": null, "F": 0.0609}, {"month": "2015-09", "A": null, "C": null, "F": -0.0408}, {"month": "2015-10", "A": null, "C": null, "F": -0.1423}, {"month": "2015-11", "A": null, "C": null, "F": -0.1428}, {"month": "2015-12", "A": null, "C": null, "F": 0.0347}, {"month": "2016-01", "A": null, "C": null, "F": 0.1882}, {"month": "2016-02", "A": null, "C": null, "F": 0.0886}, {"month": "2016-03", "A": null, "C": null, "F": -0.2123}, {"month": "2016-04", "A": null, "C": null, "F": -0.3769}, {"month": "2016-05", "A": null, "C": null, "F": -0.2489}, {"month": "2016-06", "A": null, "C": null, "F": -0.1875}, {"month": "2016-07", "A": null, "C": null, "F": -0.1281}, {"month": "2016-08", "A": null, "C": null, "F": -0.0078}, {"month": "2016-09", "A": null, "C": null, "F": -0.1744}, {"month": "2016-10", "A": null, "C": null, "F": -0.0574}, {"month": "2016-11", "A": null, "C": null, "F": 0.046}, {"month": "2016-12", "A": null, "C": null, "F": 0.124}, {"month": "2017-01", "A": null, "C": null, "F": 0.1684}, {"month": "2017-02", "A": null, "C": null, "F": 0.0416}, {"month": "2017-03", "A": null, "C": null, "F": 0.028}, {"month": "2017-04", "A": null, "C": null, "F": 0.0133}, {"month": "2017-05", "A": null, "C": null, "F": -0.1023}, {"month": "2017-06", "A": null, "C": null, "F": -0.1032}, {"month": "2017-07", "A": null, "C": null, "F": -0.1545}, {"month": "2017-08", "A": null, "C": null, "F": -0.2568}, {"month": "2017-09", "A": 0.0098, "C": null, "F": -0.262}, {"month": "2017-10", "A": -0.0896, "C": null, "F": -0.3149}, {"month": "2017-11", "A": -0.1736, "C": null, "F": -0.3406}, {"month": "2017-12", "A": -0.1014, "C": null, "F": -0.1952}, {"month": "2018-01", "A": -0.1838, "C": null, "F": 0.1484}, {"month": "2018-02", "A": -0.0735, "C": null, "F": 0.3148}, {"month": "2018-03", "A": 0.0596, "C": null, "F": 0.3148}, {"month": "2018-04", "A": -0.0104, "C": null, "F": 0.1528}, {"month": "2018-05", "A": -0.0371, "C": null, "F": -0.0029}, {"month": "2018-06", "A": -0.2032, "C": null, "F": -0.1639}, {"month": "2018-07", "A": -0.0075, "C": null, "F": -0.1557}, {"month": "2018-08", "A": 0.1661, "C": null, "F": 0.0812}, {"month": "2018-09", "A": 0.1408, "C": null, "F": 0.1658}, {"month": "2018-10", "A": 0.1, "C": null, "F": 0.1426}, {"month": "2018-11", "A": 0.1017, "C": null, "F": 0.1482}, {"month": "2018-12", "A": 0.0187, "C": null, "F": 0.1542}, {"month": "2019-01", "A": -0.0437, "C": null, "F": 0.1635}, {"month": "2019-02", "A": 0.0337, "C": null, "F": 0.0587}, {"month": "2019-03", "A": 0.1051, "C": null, "F": 0.1305}, {"month": "2019-04", "A": 0.0397, "C": null, "F": -0.0452}, {"month": "2019-05", "A": 0.0655, "C": null, "F": -0.0749}, {"month": "2019-06", "A": 0.0192, "C": null, "F": -0.215}, {"month": "2019-07", "A": 0.0451, "C": null, "F": 0.0574}, {"month": "2019-08", "A": 0.0432, "C": null, "F": 0.347}, {"month": "2019-09", "A": 0.0512, "C": null, "F": 0.3994}, {"month": "2019-10", "A": 0.139, "C": null, "F": 0.2645}, {"month": "2019-11", "A": 0.0183, "C": null, "F": 0.2417}, {"month": "2019-12", "A": 0.1433, "C": null, "F": 0.3205}, {"month": "2020-01", "A": 0.0653, "C": null, "F": 0.1019}, {"month": "2020-02", "A": 0.0697, "C": null, "F": -0.1915}, {"month": "2020-03", "A": -0.1226, "C": null, "F": -0.3854}, {"month": "2020-04", "A": 0.0647, "C": null, "F": 0.0027}, {"month": "2020-05", "A": -0.0068, "C": null, "F": 0.0982}, {"month": "2020-06", "A": 0.0729, "C": null, "F": -0.0305}, {"month": "2020-07", "A": 0.0328, "C": null, "F": -0.1961}, {"month": "2020-08", "A": 0.0488, "C": null, "F": -0.2385}, {"month": "2020-09", "A": 0.0237, "C": null, "F": -0.333}, {"month": "2020-10", "A": 0.0303, "C": null, "F": -0.1121}, {"month": "2020-11", "A": 0.0864, "C": null, "F": -0.2013}, {"month": "2020-12", "A": -0.0215, "C": null, "F": 0.0045}, {"month": "2021-01", "A": 0.0638, "C": null, "F": -0.0018}, {"month": "2021-02", "A": 0.1015, "C": null, "F": 0.1104}, {"month": "2021-03", "A": 0.1487, "C": null, "F": -0.086}, {"month": "2021-04", "A": 0.1595, "C": null, "F": -0.0879}, {"month": "2021-05", "A": 0.0781, "C": null, "F": -0.0517}, {"month": "2021-06", "A": 0.0831, "C": null, "F": -0.0212}, {"month": "2021-07", "A": 0.0292, "C": null, "F": -0.2082}, {"month": "2021-08", "A": -0.001, "C": null, "F": -0.2771}, {"month": "2021-09", "A": 0.0042, "C": null, "F": -0.2055}, {"month": "2021-10", "A": -0.0191, "C": null, "F": -0.2661}, {"month": "2021-11", "A": 0.1103, "C": null, "F": -0.0893}, {"month": "2021-12", "A": 0.1538, "C": null, "F": 0.1072}, {"month": "2022-01", "A": 0.1242, "C": null, "F": 0.2684}, {"month": "2022-02", "A": 0.0951, "C": null, "F": 0.2897}, {"month": "2022-03", "A": 0.0967, "C": null, "F": 0.1562}, {"month": "2022-04", "A": 0.0347, "C": null, "F": 0.2432}, {"month": "2022-05", "A": 0.0343, "C": null, "F": -0.0968}, {"month": "2022-06", "A": 0.0123, "C": null, "F": -0.1424}, {"month": "2022-07", "A": -0.0947, "C": null, "F": -0.0792}, {"month": "2022-08", "A": -0.1213, "C": null, "F": 0.1497}, {"month": "2022-09", "A": -0.1909, "C": null, "F": 0.2824}, {"month": "2022-10", "A": -0.1426, "C": null, "F": 0.1449}, {"month": "2022-11", "A": 0.0387, "C": null, "F": 0.1927}, {"month": "2022-12", "A": 0.0511, "C": null, "F": -0.024}, {"month": "2023-01", "A": -0.0154, "C": null, "F": 0.1443}, {"month": "2023-02", "A": -0.0069, "C": null, "F": -0.1433}, {"month": "2023-03", "A": -0.0014, "C": null, "F": -0.112}, {"month": "2023-04", "A": 0.0007, "C": null, "F": -0.1453}, {"month": "2023-05", "A": 0.0792, "C": null, "F": -0.201}, {"month": "2023-06", "A": 0.1015, "C": null, "F": 0.0077}, {"month": "2023-07", "A": -0.0435, "C": null, "F": 0.147}, {"month": "2023-08", "A": -0.1223, "C": null, "F": 0.3236}, {"month": "2023-09", "A": -0.1941, "C": null, "F": 0.2569}, {"month": "2023-10", "A": 0.0818, "C": null, "F": -0.0075}, {"month": "2023-11", "A": 0.162, "C": null, "F": -0.1601}, {"month": "2023-12", "A": 0.0789, "C": null, "F": -0.2085}, {"month": "2024-01", "A": 0.0644, "C": null, "F": 0.0205}, {"month": "2024-02", "A": 0.1127, "C": null, "F": 0.2162}, {"month": "2024-03", "A": 0.1258, "C": null, "F": 0.2588}, {"month": "2024-04", "A": -0.0279, "C": null, "F": 0.1198}, {"month": "2024-05", "A": 0.0387, "C": null, "F": 0.0679}, {"month": "2024-06", "A": 0.1033, "C": null, "F": 0.0607}, {"month": "2024-07", "A": 0.0948, "C": null, "F": -0.0145}, {"month": "2024-08", "A": 0.0679, "C": null, "F": 0.1037}, {"month": "2024-09", "A": -0.0478, "C": null, "F": 0.0877}, {"month": "2024-10", "A": 0.0405, "C": 0.3022, "F": 0.1694}, {"month": "2024-11", "A": -0.0622, "C": 0.0769, "F": 0.1394}, {"month": "2024-12", "A": -0.096, "C": 0.0198, "F": 0.2726}, {"month": "2025-01", "A": -0.1626, "C": -0.0123, "F": 0.3657}, {"month": "2025-02", "A": -0.0449, "C": -0.0298, "F": 0.0417}, {"month": "2025-03", "A": 0.0739, "C": -0.1368, "F": 0.1073}, {"month": "2025-04", "A": 0.0355, "C": 0.0921, "F": -0.143}, {"month": "2025-05", "A": 0.0066, "C": -0.0446, "F": -0.0297}, {"month": "2025-06", "A": -0.0433, "C": 0.0816, "F": -0.1252}, {"month": "2025-07", "A": 0.1098, "C": 0.066, "F": 0.0561}, {"month": "2025-08", "A": 0.0481, "C": 0.142, "F": 0.2509}, {"month": "2025-09", "A": 0.0265, "C": 0.0499, "F": 0.1327}, {"month": "2025-10", "A": -0.0424, "C": 0.0416, "F": 0.1157}, {"month": "2025-11", "A": -0.1794, "C": 0.0512, "F": -0.0323}, {"month": "2025-12", "A": -0.1292, "C": -0.0256, "F": 0.2153}, {"month": "2026-01", "A": 0.0358, "C": 0.0528, "F": 0.2672}, {"month": "2026-02", "A": 0.0122, "C": -0.1007, "F": 0.3253}, {"month": "2026-03", "A": -0.2419, "C": -0.0478, "F": 0.1212}];
 
-// ---- Section 1: rolling 12m IC per signal family --------------------------------------------------
-// A (sentiment) peaks ~0.07 mid-2022; C (fundamentals) steady 0.04-0.05; F (regulatory) noisier.
-const icRng = mulberry32(42);
-export const IC_THRESHOLD = 0.03; // Newey-West-corrected significance floor (illustrative)
-export interface ICPoint { month: string; A: number; C: number; F: number; }
-export const icTimeline: ICPoint[] = MONTHS.map((month, i) => {
-  const bump = Math.exp(-(((i - 30) / 14) ** 2)); // peak at i=30 (mid-2022)
-  return {
-    month,
-    A: +(0.04 + 0.03 * bump + (icRng() - 0.5) * 0.006).toFixed(4),
-    C: +(0.045 + (icRng() - 0.5) * 0.012).toFixed(4),
-    F: +(0.04 + 0.018 * Math.sin(i / 4) + (icRng() - 0.5) * 0.016).toFixed(4)
-  };
-});
+export interface CompPoint { month: string; q5: number; q1: number; benchmark: number; naive?: number; }
+export const compositeReturns: CompPoint[] = [{"month": "2017-09-01", "q5": 1.086183, "q1": 1.056043, "benchmark": 1.096333}, {"month": "2017-12-01", "q5": 1.197059, "q1": 1.12799, "benchmark": 1.196863}, {"month": "2018-03-01", "q5": 1.088044, "q1": 0.97599, "benchmark": 1.0904}, {"month": "2018-06-01", "q5": 1.09627, "q1": 1.059275, "benchmark": 1.135809}, {"month": "2018-09-01", "q5": 1.070283, "q1": 0.97241, "benchmark": 1.071632}, {"month": "2018-12-01", "q5": 1.153302, "q1": 1.03014, "benchmark": 1.155322}, {"month": "2019-03-01", "q5": 1.230409, "q1": 1.060192, "benchmark": 1.202409}, {"month": "2019-06-01", "q5": 1.189172, "q1": 1.001416, "benchmark": 1.178124}, {"month": "2019-09-01", "q5": 1.25196, "q1": 1.024272, "benchmark": 1.225519}, {"month": "2019-12-01", "q5": 0.962805, "q1": 0.68784, "benchmark": 0.879104}, {"month": "2020-03-01", "q5": 1.117785, "q1": 0.81705, "benchmark": 1.073207}, {"month": "2020-06-01", "q5": 1.17097, "q1": 0.854769, "benchmark": 1.126216}, {"month": "2020-09-01", "q5": 1.530919, "q1": 1.073318, "benchmark": 1.437342}, {"month": "2020-12-01", "q5": 1.527583, "q1": 1.100107, "benchmark": 1.492277}, {"month": "2021-03-01", "q5": 1.659813, "q1": 1.051701, "benchmark": 1.536868}, {"month": "2021-06-01", "q5": 1.784493, "q1": 1.052124, "benchmark": 1.568337}, {"month": "2021-09-01", "q5": 2.153271, "q1": 1.068674, "benchmark": 1.689758}, {"month": "2021-12-01", "q5": 2.336617, "q1": 1.095976, "benchmark": 1.788316}, {"month": "2022-03-01", "q5": 2.181228, "q1": 0.951251, "benchmark": 1.634846}, {"month": "2022-06-01", "q5": 2.075931, "q1": 0.93408, "benchmark": 1.594649}, {"month": "2022-09-01", "q5": 2.16023, "q1": 1.074998, "benchmark": 1.727225}, {"month": "2022-12-01", "q5": 2.240159, "q1": 1.060097, "benchmark": 1.796994}, {"month": "2023-03-01", "q5": 2.21155, "q1": 1.043176, "benchmark": 1.766859}, {"month": "2023-06-01", "q5": 2.419004, "q1": 1.054464, "benchmark": 1.829773}, {"month": "2023-09-01", "q5": 2.384642, "q1": 1.109568, "benchmark": 1.894966}, {"month": "2023-12-01", "q5": 2.455175, "q1": 1.120629, "benchmark": 1.913535}, {"month": "2024-03-01", "q5": 2.49561, "q1": 1.086376, "benchmark": 1.917364}, {"month": "2024-06-01", "q5": 3.131201, "q1": 1.28109, "benchmark": 2.300792}, {"month": "2024-09-01", "q5": 3.051876, "q1": 1.188805, "benchmark": 2.167542}, {"month": "2024-12-01", "q5": 2.697174, "q1": 1.154963, "benchmark": 2.046116}, {"month": "2025-03-01", "q5": 3.104583, "q1": 1.26429, "benchmark": 2.273878}, {"month": "2025-06-01", "q5": 3.667428, "q1": 1.490208, "benchmark": 2.684096}, {"month": "2025-09-01", "q5": 3.896682, "q1": 1.52755, "benchmark": 2.900725}, {"month": "2025-12-01", "q5": 3.646964, "q1": 1.509436, "benchmark": 2.895489}, {"month": "2026-03-01", "q5": 3.476541, "q1": 1.575844, "benchmark": 2.903645}];
+export const COMPOSITE_HAS_NAIVE = false;
+export const COMPOSITE_TRAIN_END_INDEX = 17;
 
-// ---- Section 2: cumulative return index (start 100), MASTER ends ~165, benchmark ~118 -------------
-function pathTo(target: number, vol: number, seed: number): number[] {
-  const r = mulberry32(seed);
-  const drift = Math.log(target / 100) / (N - 1);
-  let v = 100;
-  const out = [100];
-  for (let i = 1; i < N; i++) {
-    v *= Math.exp(drift + (r() - 0.5) * vol);
-    out.push(+v.toFixed(2));
-  }
-  return out;
-}
-const compLines = {
-  MASTER: pathTo(165, 0.022, 7),
-  TRI: pathTo(150, 0.026, 11),
-  EIP: pathTo(139, 0.03, 17),
-  CPS: pathTo(127, 0.028, 23),
-  Benchmark: pathTo(118, 0.018, 29)
-};
-export interface CompPoint { month: string; EIP: number; TRI: number; CPS: number; MASTER: number; Benchmark: number; }
-export const compositeReturns: CompPoint[] = MONTHS.map((month, i) => ({
-  month,
-  EIP: compLines.EIP[i],
-  TRI: compLines.TRI[i],
-  CPS: compLines.CPS[i],
-  MASTER: compLines.MASTER[i],
-  Benchmark: compLines.Benchmark[i]
-}));
-
-// ---- Section 4: 1,000-permutation placebo Sharpe histogram (20 bins) ------------------------------
-export const REAL_DEFLATED_SHARPE = 1.12;
-const pRng = mulberry32(2026);
-const placeboSharpes: number[] = [];
-for (let i = 0; i < 1000; i++) {
-  const u1 = Math.max(pRng(), 1e-9);
-  const u2 = pRng();
-  // N(0.30, 0.40) -> ~top 2% lies beyond the real Deflated Sharpe of 1.12
-  placeboSharpes.push(0.3 + Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2) * 0.4);
-}
-const BINS = 20;
-const lo = Math.min(...placeboSharpes);
-const hi = Math.max(...placeboSharpes);
-const w = (hi - lo) / BINS;
-const counts = new Array(BINS).fill(0);
-placeboSharpes.forEach((s) => counts[Math.min(BINS - 1, Math.floor((s - lo) / w))]++);
+export const REAL_DEFLATED_SHARPE = 0.753;
 export interface PlaceboBin { sharpe: number; count: number; }
-export const placeboHistogram: PlaceboBin[] = counts.map((count, i) => ({
-  sharpe: +(lo + w * (i + 0.5)).toFixed(3),
-  count
-}));
-export const placeboPValue = +(placeboSharpes.filter((s) => s >= REAL_DEFLATED_SHARPE).length / placeboSharpes.length).toFixed(3);
+export const placeboHistogram: PlaceboBin[] = [{"sharpe": -0.1087, "count": 3}, {"sharpe": -0.1012, "count": 1}, {"sharpe": -0.0937, "count": 2}, {"sharpe": -0.0862, "count": 6}, {"sharpe": -0.0787, "count": 6}, {"sharpe": -0.0711, "count": 12}, {"sharpe": -0.0636, "count": 20}, {"sharpe": -0.0561, "count": 16}, {"sharpe": -0.0486, "count": 29}, {"sharpe": -0.0411, "count": 51}, {"sharpe": -0.0336, "count": 49}, {"sharpe": -0.026, "count": 57}, {"sharpe": -0.0185, "count": 82}, {"sharpe": -0.011, "count": 75}, {"sharpe": -0.0035, "count": 82}, {"sharpe": 0.004, "count": 76}, {"sharpe": 0.0115, "count": 82}, {"sharpe": 0.0191, "count": 87}, {"sharpe": 0.0266, "count": 66}, {"sharpe": 0.0341, "count": 60}, {"sharpe": 0.0416, "count": 45}, {"sharpe": 0.0491, "count": 32}, {"sharpe": 0.0567, "count": 23}, {"sharpe": 0.0642, "count": 19}, {"sharpe": 0.0717, "count": 8}, {"sharpe": 0.0792, "count": 6}, {"sharpe": 0.0867, "count": 2}, {"sharpe": 0.0942, "count": 1}, {"sharpe": 0.1018, "count": 1}, {"sharpe": 0.1093, "count": 1}];
+export const placeboPValue = 0.003;
+export const PLACEBO_REALIZED_SPREAD = 0.0907;
 
-// ---- Section 5: universe funnel — REAL documented numbers -----------------------------------------
 export interface FunnelLevel { label: string; n: number; pct: number; accent?: boolean; }
 export interface CountryCount { c: string; n: number; }
 export const universeFunnel: { levels: FunnelLevel[]; byCountry: CountryCount[] } = {
   levels: [
     { label: "ASEAN companies screened", n: 500, pct: 100 },
-    { label: "Filtered · ADV > US$1M, ≥3yr history", n: 198, pct: 60 },
+    { label: "Filtered: ADV > US$1M, >=3yr history", n: 198, pct: 60 },
     { label: "Final discovery universe", n: 198, pct: 40, accent: true }
   ],
-  // real discovery breakdown (sums to 198). PH excluded — no resolvable PSE tickers (documented).
   byCountry: [
     { c: "SG", n: 47 },
     { c: "MY", n: 46 },
@@ -112,12 +41,11 @@ export const universeFunnel: { levels: FunnelLevel[]; byCountry: CountryCount[] 
   ]
 };
 
-// ---- Section 3: signal-decision waterfall — REAL build outcomes -----------------------------------
 export interface SignalDecision { family: string; label: string; kept: boolean; reason: string; }
 export const signalDecisions: SignalDecision[] = [
-  { family: "A", label: "Sentiment Dynamics", kept: true, reason: "GDELT 2.0 news sentiment — significant IC after FDR correction." },
-  { family: "B", label: "ESG Scores", kept: false, reason: "Yahoo Finance ESG endpoint dead — no data fallback available." },
-  { family: "C", label: "Capital Allocation", kept: true, reason: "yfinance fundamentals — clean data, consistent IC." },
-  { family: "D", label: "Disclosure Behaviour", kept: false, reason: "SGX/Bursa announcement feed returned empty across the universe." },
-  { family: "F", label: "Regulatory Overlay", kept: true, reason: "Country-level hand-constructed overlay — additive alpha." }
+  { family: "A", label: "Sentiment Dynamics", kept: true, reason: "GDELT 2.0 news sentiment. A3 attention-trend and A4 tone-dispersion survived FDR (q=0.10); A1 sentiment-velocity did not." },
+  { family: "B", label: "ESG Scores", kept: false, reason: "Dropped: Yahoo Finance ESG endpoint dead (HTTP 404) - no data." },
+  { family: "C", label: "Capital Allocation", kept: true, reason: "yfinance fundamentals, clean data, but did not survive FDR on the real panel." },
+  { family: "D", label: "Disclosure Behaviour", kept: false, reason: "Dropped: SGX/Bursa announcement feed returned empty." },
+  { family: "F", label: "Regulatory Overlay", kept: true, reason: "Country-level hand-built overlay; did not survive FDR on the real panel." }
 ];

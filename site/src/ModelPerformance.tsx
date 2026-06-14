@@ -11,6 +11,7 @@ import {
   compositeReturns,
   placeboHistogram,
   placeboPValue,
+  PLACEBO_REALIZED_SPREAD,
   REAL_DEFLATED_SHARPE,
   universeFunnel,
   signalDecisions,
@@ -235,15 +236,25 @@ function UniverseFunnel() {
   );
 }
 
-const IC_LINE_DATA = icTimeline.map((p) => ({ date: p.month, A: p.A, C: p.C, F: p.F }));
-const RETURNS_DATA = compositeReturns.map((p) => ({
+// Real per-date family IC (noisy, can be negative); drop warmup rows missing any family.
+const IC_LINE_DATA: Record<string, number | string>[] = icTimeline
+  .filter((p) => p.A != null && p.C != null && p.F != null)
+  .map((p) => ({ date: p.month, A: p.A as number, C: p.C as number, F: p.F as number }));
+const _icVals = IC_LINE_DATA.flatMap((r) => [Number(r.A), Number(r.C), Number(r.F)]);
+const IC_MIN = Math.floor(Math.min(..._icVals, 0) * 100) / 100;
+const IC_MAX = Math.ceil(Math.max(..._icVals, IC_THRESHOLD) * 100) / 100;
+
+// Real frozen backtest: winning-composite quintile NAV (net), start = 1.0.
+const RETURNS_DATA: Record<string, number | string>[] = compositeReturns.map((p) => ({
   date: p.month,
-  MASTER: p.MASTER,
-  EIP: p.EIP,
-  TRI: p.TRI,
-  CPS: p.CPS,
-  Benchmark: p.Benchmark
+  q5: p.q5,
+  q1: p.q1,
+  benchmark: p.benchmark
 }));
+const _rVals = RETURNS_DATA.flatMap((r) => [Number(r.q5), Number(r.q1), Number(r.benchmark)]);
+const RET_MIN = Math.floor(Math.min(..._rVals) * 10) / 10;
+const RET_MAX = Math.ceil(Math.max(..._rVals) * 10) / 10;
+
 const PLACEBO_BINS = placeboHistogram.map((b) => ({ x: b.sharpe, y: b.count }));
 
 export default function ModelPerformance({ dataMode }: { dataMode: string }) {
@@ -263,23 +274,23 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
           illustrative={illustrative}
           title="Signal IC Timeline"
           annotation={[
-            "Higher IC = stronger predictive power. All three retained signal families sit above the significance threshold.",
-            "Rolling 12-month information coefficient by signal family; the dotted line is the Newey-West-corrected significance floor."
+            "Per-period rank IC is small and noisy, centred near zero - the honest shape of an early-stage equity factor.",
+            "Across the full window only A3 (attention) and A4 (tone dispersion) cleared Newey-West + Benjamini-Hochberg FDR (q=0.10); A1 (sentiment velocity), C and F did not."
           ]}
         >
           <LineChart
-            ariaLabel="Rolling information coefficient over time for signal families A, C and F"
+            ariaLabel="Per-period information coefficient over time for signal families A, C and F"
             data={IC_LINE_DATA}
             xKey="date"
-            minY={0}
-            maxY={0.1}
-            yUnit="IC"
+            minY={IC_MIN}
+            maxY={IC_MAX}
+            yUnit="Rank IC (3m fwd)"
             yDecimals={2}
-            threshold={{ y: IC_THRESHOLD, label: "Significance threshold (Newey-West)" }}
+            threshold={{ y: IC_THRESHOLD, label: "FDR reference (q=0.10)" }}
             lines={[
-              { key: "A", label: "A · Sentiment", color: ACCENT },
-              { key: "C", label: "C · Capital", color: "#d8d8d8" },
-              { key: "F", label: "F · Regulatory", color: "#8a8a8a" }
+              { key: "A", label: "A Sentiment", color: ACCENT },
+              { key: "C", label: "C Capital", color: "#d8d8d8" },
+              { key: "F", label: "F Regulatory", color: "#8a8a8a" }
             ]}
           />
         </ChartCard>
@@ -288,24 +299,22 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
           illustrative={illustrative}
           title="Composite Returns"
           annotation={[
-            "MASTER (all signals combined) outperforms the equal-weight benchmark across the backtest window.",
-            "Cumulative return index, base 100, monthly 2020–2024. MASTER is highlighted only because it is the model winner."
+            "Winning composite (MASTER) quintiles, net of the ASEAN cost matrix. Q5 ends above the equal-weight benchmark; Q1 below it.",
+            `But the net Q5-Q1 spread (+6.8%/yr) has a 95% CI of [-1.75%, +15.79%] - it straddles zero, so it is NOT statistically significant net of costs.`
           ]}
         >
           <LineChart
-            ariaLabel="Cumulative indexed returns for EIP, TRI, CPS, MASTER and the equal-weight benchmark"
+            ariaLabel="Net cumulative quintile NAV for the winning composite versus the equal-weight benchmark"
             data={RETURNS_DATA}
             xKey="date"
-            minY={95}
-            maxY={170}
-            yUnit="Index (base 100)"
-            yDecimals={0}
+            minY={RET_MIN}
+            maxY={RET_MAX}
+            yUnit="Net cumulative (start 1.0)"
+            yDecimals={1}
             lines={[
-              { key: "MASTER", label: "MASTER", color: ACCENT, width: 3 },
-              { key: "TRI", label: "TRI", color: "#cccccc" },
-              { key: "EIP", label: "EIP", color: "#999999" },
-              { key: "CPS", label: "CPS", color: "#6f6f6f" },
-              { key: "Benchmark", label: "Benchmark", color: "#ffffff", dashed: true }
+              { key: "q5", label: "Q5 (top)", color: ACCENT, width: 3 },
+              { key: "benchmark", label: "Benchmark", color: "#ffffff", dashed: true },
+              { key: "q1", label: "Q1 (bottom)", color: "#8a8a8a" }
             ]}
           />
         </ChartCard>
@@ -314,8 +323,8 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
           illustrative={illustrative}
           title="Signal Decision Waterfall"
           annotation={[
-            "The kept families are the only inputs allowed into validated composites.",
-            "Data failures in the B and D families were found during construction and disclosed, not hidden — dropping them improved robustness."
+            "A3 (attention) and A4 (tone dispersion) survived FDR; A1, and the C and F families, did not.",
+            "B and D were dropped for missing data (dead Yahoo ESG endpoint; empty SGX/Bursa feed) - disclosed, not hidden."
           ]}
         >
           <DecisionWaterfall />
@@ -325,17 +334,17 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
           illustrative={illustrative}
           title="Placebo Test"
           annotation={[
-            "1,000 random signal permutations produce Sharpe ratios clustered near zero (the null).",
-            "The real model's Deflated Sharpe sits far in the right tail — the result is unlikely to be chance."
+            `1,000 cross-sectional permutations of the ranking, gross of costs. The realized gross Q5-Q1 spread sits in the right tail: p=${placeboPValue} - the ranking carries information before costs.`,
+            `Net of costs that edge is inconclusive (Q5-Q1 CI straddles zero); Deflated Sharpe ${REAL_DEFLATED_SHARPE}. The gross signal is real; costs erode it - a normal, honest early-stage finding.`
           ]}
         >
           <Histogram
-            ariaLabel="Histogram of 1000 permutation Sharpe ratios with the real Deflated Sharpe marked"
+            ariaLabel="Histogram of 1000 permutation gross Q5 minus Q1 spreads with the realized spread marked"
             bins={PLACEBO_BINS}
-            realized={REAL_DEFLATED_SHARPE}
-            realizedLabel="Deflated Sharpe (real model)"
+            realized={PLACEBO_REALIZED_SPREAD}
+            realizedLabel="Realized gross spread"
             pValue={placeboPValue}
-            xLabel="Permutation Sharpe ratio (n = 1000)"
+            xLabel="Permutation Q5-Q1 spread, annualized (n=1000)"
             yLabel="Count"
           />
         </ChartCard>

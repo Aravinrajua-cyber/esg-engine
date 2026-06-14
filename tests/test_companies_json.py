@@ -50,13 +50,14 @@ def test_companies_json_company_records(sample_companies_json):
         assert "risk_index" not in company
 
 
-def test_generated_companies_feed_has_expected_cardinality_and_synthetic_label(sample_companies_json):
-    assert sample_companies_json["data_mode"] == "synthetic"
-    assert sample_companies_json["universe_size"] == 500
-    assert len(sample_companies_json["companies"]) == 500
-    assert all("Synthetic demo" in company["explanation"] for company in sample_companies_json["companies"])
-    assert all(company["name"] for company in sample_companies_json["companies"])
-    assert all(company["ticker"] for company in sample_companies_json["companies"])
+def test_generated_companies_feed_has_consistent_cardinality_and_labels(sample_companies_json):
+    # Works for the synthetic demo feed (500) and the frozen live feed (real discovery universe).
+    feed = sample_companies_json
+    assert feed["data_mode"] in {"live", "synthetic"}
+    assert feed["universe_size"] == len(feed["companies"]) >= 1
+    assert all(company["name"] for company in feed["companies"])
+    assert all(company["ticker"] for company in feed["companies"])
+    assert all(company["explanation"] for company in feed["companies"])
 
 
 def test_rankings_are_complete_unique_and_score_sorted(sample_companies_json):
@@ -78,9 +79,10 @@ def test_timeseries_missing_data_and_bounds_are_explicit(sample_companies_json):
         assert set(series) == {"dates", "price_usd", "sentiment_tone", "score"}
         lengths = {len(series[key]) for key in series}
         assert len(lengths) == 1
-        assert all(value >= 0 for value in series["price_usd"])
-        assert all(-5 <= value <= 5 for value in series["sentiment_tone"])
-        assert all(0 <= value <= 100 for value in series["score"])
+        # real series carry None for missing months (never imputed); bound only present values
+        assert all(value is None or value >= 0 for value in series["price_usd"])
+        assert all(value is None or -100 <= value <= 100 for value in series["sentiment_tone"])  # GDELT tone scale
+        assert all(value is None or 0 <= value <= 100 for value in series["score"])
 
 
 def test_schema_safe_derived_risk_index_bounds(sample_companies_json):

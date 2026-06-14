@@ -15,25 +15,23 @@ slides:
       - "Universe: 500 screened -> 198 liquid ASEAN names."
       - "Markets: SG 47 / MY 46 / ID 43 / TH 37 / VN 25."
 
-  - layout: split
+  - layout: statement
     title: "Data pipeline and signal construction"
-    figure_path: "../../outputs/figures/ic_bar.png"
     body:
       - "KEPT: yfinance (prices, FX, fundamentals) + GDELT 2.0 (news sentiment)."
       - "DROPPED: Yahoo ESG endpoint (HTTP 404); SGX/Bursa disclosures (empty feed)."
       - "Signal families: A sentiment, C fundamentals, F regulatory."
       - "ICs Newey-West corrected; Benjamini-Hochberg FDR at q=0.10."
-      - "Chart illustrative until Phase 4 is frozen."
+      - "Frozen result: A3 (attention) and A4 (tone dispersion) survived FDR; A1, C and F did not."
 
-  - layout: split
-    title: "Validation methodology"
-    figure_path: "../../outputs/figures/placebo_histogram.png"
+  - layout: statement
+    title: "Validation: the honest result"
     body:
-      - "Fama-MacBeth regressions with momentum, size, sector and country controls."
-      - "Four composites compared: EIP, TRI, CPS, MASTER."
-      - "Block-bootstrap 95% CIs; train <=2021-12 / test 2022+ enforced once."
-      - "1,000-permutation placebo test - real model in the top 2%."
-      - "Illustrative until Phase 4 is frozen."
+      - "Fama-MacBeth with momentum/size/sector/country controls; FDR q=0.10; test window touched once."
+      - "Survivors: A3 (attention), A4 (tone dispersion). A1 (sentiment velocity) did NOT survive."
+      - "Winner MASTER: net Q5-Q1 +6.8%/yr, but 95% CI [-1.8%, +15.8%] straddles zero - not significant net of costs."
+      - "Gross placebo p=0.003 (signal real before costs); Deflated Sharpe 0.753; out-of-sample IC ~ 0."
+      - "Honest reading: the gross signal is real; realistic costs erode it to inconclusive at net level."
 
   - layout: statement
     title: "Product: live, interactive, honest"
@@ -53,8 +51,9 @@ slides:
       - "Research demonstration - not investment advice."
 
   - layout: closing
-    title: "ESG momentum predicts returns before ratings catch up."
+    title: "We mapped the boundary of where the signal lives."
     body:
-      - "3 signal families, 4 composites, a 198-name ASEAN universe."
-      - "Next: licensed ESG data -> full disclosure feed -> live pipeline."
+      - "A real GROSS sentiment-attention signal (placebo p=0.003); net of costs the edge is inconclusive."
+      - "Rigorous by construction: FDR, Deflated Sharpe, placebo, a touched-once out-of-sample window."
+      - "Next: licensed point-in-time ESG data restores the dropped families and sharpens the test."
       - "backtesters.vercel.app"

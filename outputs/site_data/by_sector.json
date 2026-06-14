@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "key": "Consumer",
+    "spread_net": 7.23
+  },
+  {
+    "key": "Energy",
+    "spread_net": 4.91
+  },
+  {
+    "key": "Financials",
+    "spread_net": 6.92
+  },
+  {
+    "key": "Industrials",
+    "spread_net": -2.15
+  },
+  {
+    "key": "Materials",
+    "spread_net": 2.51
+  },
+  {
+    "key": "Real Estate",
+    "spread_net": 2.84
+  },
+  {
+    "key": "Technology",
+    "spread_net": 2.03
+  },
+  {
+    "key": "Utilities",
+    "spread_net": 4.78
+  }
+]

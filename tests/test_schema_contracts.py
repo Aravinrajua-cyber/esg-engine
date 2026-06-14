@@ -30,7 +30,8 @@ def test_schema_column_order_examples():
 
 
 def test_companies_json_top_level_keys(sample_companies_json):
-    assert set(sample_companies_json) == {
+    # required frozen-contract keys must be present; the live feed adds an additive "meta" block.
+    assert {
         "schema_version",
         "generated_at",
         "data_mode",
@@ -40,6 +41,6 @@ def test_companies_json_top_level_keys(sample_companies_json):
         "pillars",
         "flags",
         "companies",
-    }
+    }.issubset(set(sample_companies_json))
     assert sample_companies_json["schema_version"] == 1
     assert sample_companies_json["data_mode"] in {"live", "synthetic"}

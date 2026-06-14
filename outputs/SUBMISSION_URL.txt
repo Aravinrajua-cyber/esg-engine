@@ -1,9 +1,17 @@
 https://backtesters.vercel.app
 
-ESG Momentum Engine — PolyFinTech100 API Hackathon 2026 (The Backtesters)
-Live production deployment (Vercel).
+ESG Momentum Engine - PolyFinTech100 API Hackathon 2026 (The Backtesters)
+Live production deployment (Vercel) - REAL frozen Phase 4 data, deployed & verified 2026-06-14
+(canonical domain HTTP 200; served bundle index-DypFbIVZ.js matches the local build).
 
-Note: the live site currently shows illustrative synthetic demonstration data — the
-"Illustrative Data" badges and the SYNTHETIC DEMONSTRATION DATA banner are visible.
-It auto-switches to real figures (badges auto-hide) once frozen Phase 4 results
-replace site_data and data_mode becomes "live".
+Honest result now on the live site (Model Performance page; "Illustrative Data" badges hidden,
+data_mode: live):
+  - FDR survivors (q=0.10): A3 (attention trend), A4 (tone dispersion).
+    A1 (sentiment velocity) did NOT survive.
+  - Winner MASTER: net Q5-Q1 +6.81%/yr, 95% CI [-1.75%, +15.79%] - straddles zero,
+    NOT statistically significant net of costs.
+  - Gross placebo p=0.003 (the ranking carries information before costs).
+  - Deflated Sharpe 0.753; out-of-sample test IC ~ 0.
+
+The screener feed is the real frozen discovery universe (198 names, data_mode live), with
+per-company coverage flags where ESG inputs are unavailable (Yahoo ESG endpoint dead).
