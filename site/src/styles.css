@@ -213,7 +213,7 @@ input[type="range"] { accent-color: var(--signal); }
 .score { position: relative; display: grid; grid-template-columns: 52px 32px; gap: 8px; align-items: center; }
 .score em { font-style: normal; color: var(--emphasis); font-weight: 800; }
 .score i { position: absolute; bottom: 2px; height: 3px; background: var(--border); }
-.score i::after { content: ""; display: block; height: 3px; background: var(--muted); width: 100%; }
+.score i::after { content: ""; display: block; height: 3px; background: var(--text); width: 100%; }
 .chip, .flag { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: var(--soft); color: var(--muted); border: 1px solid var(--border); }
 .future_leader, .hidden_winner { color: var(--green); }
 .overrated_leader, .value_trap { color: var(--red); }
@@ -232,19 +232,16 @@ input[type="range"] { accent-color: var(--signal); }
 .radial::before { content: ""; position: absolute; width: 86px; aspect-ratio: 1; border-radius: 50%; background: var(--bg); }
 .radial span { position: relative; font-size: 34px; font-weight: 850; color: var(--emphasis); }
 .explanation { max-width: 68ch; color: var(--muted); }
-.detailGrid { display: grid; grid-template-columns: 1.2fr .8fr 1fr .8fr; gap: 28px; margin-top: 36px; }
+.detailGrid { display: grid; grid-template-columns: 1fr 1.2fr .9fr; gap: 28px; margin-top: 36px; }
 .bar { display: grid; grid-template-columns: minmax(190px, .8fr) 1fr 36px; gap: 12px; align-items: center; margin-bottom: 12px; }
 .bar span { overflow-wrap: anywhere; line-height: 1.25; }
 .bar i, .comparePanel i { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
-.bar b, .comparePanel b { display: block; height: 100%; background: var(--muted); }
-.matrix { aspect-ratio: 1; border: 1px solid var(--border); position: relative; background: linear-gradient(90deg, transparent 49.5%, var(--border) 50%, transparent 50.5%), linear-gradient(0deg, transparent 49.5%, var(--border) 50%, transparent 50.5%); }
-.matrix i { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--signal); transform: translate(-50%, 50%); }
-.matrix span, .matrix b { position: absolute; font-size: 12px; color: var(--muted); }
-.matrix span { left: 8px; top: 8px; }
-.matrix b { right: 8px; bottom: 8px; }
+.bar b, .comparePanel b { display: block; height: 100%; background: var(--signal); }
 .timeline, .emptyState, .coverageBlock { min-height: 220px; background: var(--soft); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
-.timeline svg { width: 100%; height: 160px; }
-.timeline polyline { fill: none; stroke: var(--signal); stroke-width: 3; }
+.timeline h3 { margin: 0 0 12px; color: var(--emphasis); font-size: 18px; }
+.timeline span { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; }
+.timelineSvg { width: 100%; height: auto; }
+.timelineLine { fill: none; stroke: var(--signal); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
 .coverageBlock strong { display: block; font-size: 44px; line-height: 1; margin-bottom: 10px; color: var(--emphasis); }
 .coverageBlock h3 { color: var(--emphasis); }
 .coverageBlock p { color: var(--muted); margin-top: 0; }
@@ -268,6 +265,9 @@ input[type="range"] { accent-color: var(--signal); }
 .risks p { color: var(--muted); margin: 0; }
 
 footer { padding: 60px clamp(20px, 7vw, 112px); color: var(--muted); border-top: 1px solid var(--border); background: var(--page); }
+footer .credit { margin-top: 14px; color: var(--text); font-size: 13px; letter-spacing: 0.02em; }
+footer .credit::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--signal); vertical-align: middle; }
+.sandboxTotal { color: var(--text); font-size: 12px; margin: 4px 0 0; }
 
 .skeletonPage { min-height: 100vh; display: grid; gap: 18px; padding: 80px; }
 .skeletonPage div { background: var(--card); border: 1px solid var(--border); border-radius: 8px; animation: pulse 1.2s infinite alternate; }
@@ -345,9 +345,6 @@ footer { padding: 60px clamp(20px, 7vw, 112px); color: var(--muted); border-top:
 .compareBar i { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
 .compareBar b { display: block; height: 100%; background: var(--muted); }
 .compareBar em { color: var(--text); font-style: normal; font-size: 12px; text-align: right; }
-.matrixWrap { display: grid; gap: 8px; align-content: start; }
-.matrixWrap h3 { color: var(--emphasis); margin: 0; font-size: 18px; }
-.matrixCaption { color: var(--muted); font-size: 12px; margin: 0; }
 
 /* ---- responsive ---------------------------------------------------------------------------- */
 @media (max-width: 1100px) {

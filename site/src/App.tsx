@@ -11,6 +11,12 @@ const COMPONENT_LABELS: Record<PillarKey, string> = {
   governance_credibility: "G component: Governance Credibility",
   disclosure_behavior: "Non-ESG component: Disclosure Behavior"
 };
+const PILLAR_PLAIN: Record<PillarKey, string> = {
+  sentiment_dynamics: "Sentiment",
+  transition_readiness: "Transition",
+  governance_credibility: "Governance",
+  disclosure_behavior: "Disclosure"
+};
 const RISK_FLAG_WEIGHTS: Record<string, number> = {
   LOW_COVERAGE: 30,
   CONTROVERSY_RISING: 25,
@@ -106,6 +112,7 @@ export default function App() {
       <footer>
         <p>{siteContent.footer.disclaimer}</p>
         <p>{siteContent.footer.sourceNote}</p>
+        <p className="credit">Made by A. Aravinthan Raju &middot; Student, Singapore Polytechnic</p>
       </footer>
     </>
   );
@@ -199,7 +206,8 @@ function Leaderboard({ feed }: { feed: CompaniesFeed }) {
   const customWeights = PILLARS.some((key) => weights[key] !== feed.model.validated_weights[key]);
   const scored = useMemo(() => {
     const rows = feed.companies.map((company) => {
-      const customScore = PILLARS.reduce((sum, key) => sum + weights[key] * company.pillar_scores[key], 0);
+      const weightSum = PILLARS.reduce((sum, key) => sum + weights[key], 0) || 1;
+      const customScore = PILLARS.reduce((sum, key) => sum + weights[key] * company.pillar_scores[key], 0) / weightSum;
       return { ...company, overall_score: Number(customScore.toFixed(1)) };
     });
     return rows
@@ -260,13 +268,18 @@ function WeightSandbox({ weights, setWeights, defaults, custom }: { weights: Rec
       </div>
       {custom && <strong className="customBanner">{siteContent.leaderboard.customWeightsBanner}</strong>}
       <div className="sliders">
-        {PILLARS.map((key) => (
-          <label key={key} title="Changes recompute the client-side weighted score.">
-            <span>{labelFor(key)}</span>
-            <input type="range" min="0" max="1" step="0.01" value={weights[key]} onChange={(e) => setWeights({ ...weights, [key]: Number(e.target.value) })} />
-            <output>{weights[key].toFixed(2)}</output>
-          </label>
-        ))}
+        {PILLARS.map((key) => {
+          const others = PILLARS.filter((k) => k !== key).reduce((sum, k) => sum + weights[k], 0);
+          const maxAllowed = Math.max(0, Number((1 - others).toFixed(2)));
+          return (
+            <label key={key} title="The four weights are capped so they never add up to more than 1.00. Lower one to free up room for another.">
+              <span>{labelFor(key)}</span>
+              <input type="range" min="0" max={maxAllowed} step="0.01" value={weights[key]} onChange={(e) => setWeights({ ...weights, [key]: Math.min(Number(e.target.value), maxAllowed) })} />
+              <output>{weights[key].toFixed(2)}</output>
+            </label>
+          );
+        })}
+        <p className="sandboxTotal">Total weight: {PILLARS.reduce((s, k) => s + weights[k], 0).toFixed(2)} / 1.00</p>
       </div>
       <button className="secondary" onClick={() => setWeights(defaults)}><RotateCcw size={16} /> {siteContent.leaderboard.resetLabel}</button>
     </aside>
@@ -318,8 +331,16 @@ function CompanyDetail({ company, flags, compareCompanies }: { company: Company;
         </div>
       </div>
       <div className="detailGrid">
-        <div className="pillarBlock">{PILLARS.map((key) => <div className="bar" key={key} title={`${COMPONENT_LABELS[key]} score`}><span>{COMPONENT_LABELS[key]}</span><i><b style={{ width: `${company.pillar_scores[key]}%` }} /></i><em>{company.pillar_scores[key].toFixed(0)}</em></div>)}</div>
-        <Matrix company={company} />
+        <div className="pillarBlock">
+          <h3>Pillar scores</h3>
+          {PILLARS.map((key) => (
+            <div className="bar" key={key} title={`${COMPONENT_LABELS[key]} (0-100)`}>
+              <span>{PILLAR_PLAIN[key]}</span>
+              <i><b style={{ width: `${company.pillar_scores[key]}%` }} /></i>
+              <em>{company.pillar_scores[key].toFixed(0)}%</em>
+            </div>
+          ))}
+        </div>
         <Timeline company={company} />
         <div className="coverageBlock">
           <h3>Risk index</h3>
@@ -336,28 +357,40 @@ function CompanyDetail({ company, flags, compareCompanies }: { company: Company;
   );
 }
 
-function Matrix({ company }: { company: Company }) {
+function Timeline({ company }: { company: Company }) {
+  const ts = company.timeseries;
+  if (!ts || !ts.dates.length) {
+    return <div className="timeline"><h3>Score over time</h3><div className="emptyState">No score history available for this company.</div></div>;
+  }
+  const W = 360, H = 220;
+  const pad = { l: 34, r: 14, t: 16, b: 30 };
+  const plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
+  const n = ts.dates.length;
+  const xAt = (i: number) => pad.l + (i / Math.max(1, n - 1)) * plotW;
+  const yAt = (v: number) => pad.t + (1 - v / 100) * plotH;
+  const path = ts.score
+    .map((value, index) => (value == null ? null : { value, index }))
+    .filter((p): p is { value: number; index: number } => p !== null)
+    .map((p, k) => `${k === 0 ? "M" : "L"} ${xAt(p.index).toFixed(1)} ${yAt(p.value).toFixed(1)}`)
+    .join(" ");
+  const ymd = (d: string) => String(d).slice(0, 7);
   return (
-    <div className="matrixWrap">
-      <h3>Level vs momentum</h3>
-      <div className="matrix" title="Horizontal = current ESG level percentile. Vertical = ESG momentum percentile. The dot is this company.">
-        <i style={{ left: `${company.esg_level_pctile}%`, bottom: `${company.esg_momentum_pctile}%` }} />
-        <span>Momentum ↑</span>
-        <b>ESG level →</b>
-      </div>
-      <p className="matrixCaption">Dot = this company. Top-left = improving fast but still low on ESG level (a "hidden winner").</p>
+    <div className="timeline">
+      <h3>Score over time</h3>
+      <svg viewBox={`0 0 ${W} ${H}`} className="timelineSvg" role="img" aria-label="Percentile score over time">
+        {[0, 50, 100].map((tick) => (
+          <g key={tick}>
+            <line x1={pad.l} x2={W - pad.r} y1={yAt(tick)} y2={yAt(tick)} className="gridLine" />
+            <text x={pad.l - 6} y={yAt(tick) + 3.5} textAnchor="end" className="axisText">{tick}</text>
+          </g>
+        ))}
+        <path d={path} className="timelineLine" />
+        <text x={pad.l} y={H - 8} textAnchor="start" className="axisText">{ymd(ts.dates[0])}</text>
+        <text x={W - pad.r} y={H - 8} textAnchor="end" className="axisText">{ymd(ts.dates[n - 1])}</text>
+      </svg>
+      <span>Percentile score 0–100 over time (higher = better)</span>
     </div>
   );
-}
-
-function Timeline({ company }: { company: Company }) {
-  if (!company.timeseries) return <div className="emptyState">No score history available for this company.</div>;
-  const arr = company.timeseries.score;
-  const points = arr
-    .map((value, index) => (value == null ? null : `${(index / Math.max(1, arr.length - 1)) * 100},${100 - value}`))
-    .filter((p): p is string => p !== null)
-    .join(" ");
-  return <div className="timeline"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points={points} /></svg><span>Score over time (higher = better)</span></div>;
 }
 
 function Compare({ companies }: { companies: Company[] }) {
