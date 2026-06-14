@@ -1,0 +1,23 @@
+[
+  {
+    "variable": "A1",
+    "label": "Sentiment velocity",
+    "ic_3m": 0.041,
+    "t_nw": 2.1,
+    "fdr_survived": true
+  },
+  {
+    "variable": "B2",
+    "label": "Transition investment",
+    "ic_3m": 0.033,
+    "t_nw": 1.8,
+    "fdr_survived": true
+  },
+  {
+    "variable": "C3",
+    "label": "Governance credibility",
+    "ic_3m": 0.025,
+    "t_nw": 1.4,
+    "fdr_survived": false
+  }
+]

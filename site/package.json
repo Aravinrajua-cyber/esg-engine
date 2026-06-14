@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "syncdata": "node -e \"const fs=require('fs');const s='../outputs/site_data';const d='public/site_data';if(fs.existsSync(s)){fs.mkdirSync(d,{recursive:true});for(const f of fs.readdirSync(s)){if(f.endsWith('.json'))fs.copyFileSync(s+'/'+f,d+'/'+f)}console.log('synced site_data ->',d)}else{console.log('no ../outputs/site_data; using committed public/site_data')}\"",
+    "prebuild": "npm run syncdata",
     "build": "tsc && vite build",
     "preview": "vite preview --host 127.0.0.1"
   },
