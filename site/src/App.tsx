@@ -113,6 +113,7 @@ export default function App() {
         <p>{siteContent.footer.disclaimer}</p>
         <p>{siteContent.footer.sourceNote}</p>
         <p className="credit">Made by A Aravinthan Raju &middot; Student, Singapore Polytechnic</p>
+        <p className="builtBy">Built by A Aravinthan Raju &middot; PolyFinTech100 2026 &middot; CGS International ESG Track</p>
       </footer>
     </>
   );
