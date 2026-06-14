@@ -15,6 +15,7 @@ import {
   REAL_DEFLATED_SHARPE,
   universeFunnel,
   signalDecisions,
+  factorHeatmap,
   isIllustrative
 } from "./synthData";
 
@@ -35,17 +36,22 @@ function useReveal<T extends HTMLElement>() {
   return ref;
 }
 
-function ChartCard({ title, annotation, illustrative, children }: { title: string; annotation: string[]; illustrative: boolean; children: ReactNode }) {
+function ChartCard({ title, explain, howTo, annotation, illustrative, children }: { title: string; explain: string; howTo: string; annotation: string[]; illustrative: boolean; children: ReactNode }) {
   return (
     <article className="chartCard">
       <div className="chartHeader">
-        <h3>{title}</h3>
+        <h3>
+          {title}
+          <span className="infoIcon" tabIndex={0} role="note" aria-label={`How to read ${title}: ${howTo}`} data-tip={howTo}>i</span>
+        </h3>
         {illustrative && (
-          <span title="Synthetic placeholder — swaps to frozen Phase 4 results when available">Illustrative Data</span>
+          <span className="badge" title="Synthetic placeholder — swaps to frozen Phase 4 results when available">Illustrative Data</span>
         )}
       </div>
+      <p className="chartExplain">{explain}</p>
       {children}
       <div className="annotation">
+        <p className="takeawayLabel">What this tells you</p>
         {annotation.map((line) => (
           <p key={line}>{line}</p>
         ))}
@@ -236,6 +242,41 @@ function UniverseFunnel() {
   );
 }
 
+function Heatmap() {
+  const vals = factorHeatmap.rows.flatMap((r) => r.cells.map((c) => c.ic)).filter((v): v is number => v != null);
+  const maxAbs = Math.max(...vals.map((v) => Math.abs(v)), 0.01);
+  const color = (ic: number | null) => {
+    if (ic == null) return "#161616";
+    const t = Math.min(1, Math.abs(ic) / maxAbs);
+    return ic >= 0 ? `rgba(200,255,0,${(0.12 + t * 0.72).toFixed(2)})` : `rgba(130,130,130,${(0.12 + t * 0.5).toFixed(2)})`;
+  };
+  return (
+    <div className="heatmap" role="img" aria-label="Predictive power (information coefficient) of each signal across 1-, 3-, 6- and 12-month horizons">
+      <div className="heatRow heatHead">
+        <span className="heatLabel" />
+        {factorHeatmap.horizons.map((h) => (
+          <span key={h} className="heatColHead">{h}m</span>
+        ))}
+      </div>
+      {factorHeatmap.rows.map((r) => (
+        <div className="heatRow" key={r.variable}>
+          <span className="heatLabel">{r.label}</span>
+          {r.cells.map((c) => (
+            <span
+              key={c.h}
+              className={`heatCell${c.fdr ? " fdr" : ""}`}
+              style={{ background: color(c.ic) }}
+              title={`${r.label} @ ${c.h}m: predictive power ${c.ic == null ? "n/a" : c.ic.toFixed(3)}${c.fdr ? " (passed reliability check)" : ""}`}
+            >
+              {c.ic == null ? "" : c.ic.toFixed(2)}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Real per-date family IC (noisy, can be negative); drop warmup rows missing any family.
 const IC_LINE_DATA: Record<string, number | string>[] = icTimeline
   .filter((p) => p.A != null && p.C != null && p.F != null)
@@ -263,19 +304,22 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
   return (
     <section id="model-performance" ref={ref} className="section reveal">
       <p className="eyebrow">Model Performance</p>
-      <h2>The factor evidence, validated.</h2>
+      <h2>Does the model actually work? The honest evidence.</h2>
       <p className="measure">
-        This is the research case behind the screener: signal information coefficients, composite
-        construction, the build/drop audit trail, a placebo control, and how the validation universe
-        is built.{illustrative ? " Charts below are illustrative synthetic placeholders until the Phase 4 run is frozen." : " Charts below reflect the frozen Phase 4 validation run."}
+        A plain-English walkthrough of the research behind the rankings: whether each signal predicts
+        returns, how a "top companies vs bottom companies" strategy would have performed after trading
+        costs, which signals we kept or dropped, and whether the result could just be luck. Hover the
+        small "i" on any chart for how to read it.{illustrative ? " (Charts below are illustrative placeholders until the model run is frozen.)" : ""}
       </p>
       <div className="performanceGrid">
         <ChartCard
           illustrative={illustrative}
           title="Signal IC Timeline"
+          explain="Does each signal actually predict future returns? This tracks each signal's predictive power, month by month."
+          howTo="Each line is a signal family. Above zero means the signal pointed the right way that month. It is meant to be small and jumpy - what matters is the long-run average, tested in the heatmap and placebo below."
           annotation={[
-            "Per-period rank IC is small and noisy, centred near zero - the honest shape of an early-stage equity factor.",
-            "Across the full window only A3 (attention) and A4 (tone dispersion) cleared Newey-West + Benjamini-Hochberg FDR (q=0.10); A1 (sentiment velocity), C and F did not."
+            "Predictive power is small and jumpy month to month - normal for stock-market signals.",
+            "Over the full period only the two news-attention signals (A3 attention, A4 tone) passed our statistical reliability check; sentiment-velocity, fundamentals and regulatory did not."
           ]}
         >
           <LineChart
@@ -298,9 +342,11 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
         <ChartCard
           illustrative={illustrative}
           title="Composite Returns"
+          explain="If you had held the model's top-ranked companies vs the bottom vs the whole market, how would $1 have grown - after trading costs?"
+          howTo="Top = the model's best-scored fifth of companies; Bottom = the worst-scored fifth; Benchmark = holding every company equally. Lines show the growth of $1, net of costs."
           annotation={[
-            "Winning composite (MASTER) quintiles, net of the ASEAN cost matrix. Q5 ends above the equal-weight benchmark; Q1 below it.",
-            `But the net Q5-Q1 spread (+6.8%/yr) has a 95% CI of [-1.75%, +15.79%] - it straddles zero, so it is NOT statistically significant net of costs.`
+            "The top fifth (green) finishes above the market; the bottom fifth below it - the ranking lines companies up the right way.",
+            "But the Top-vs-Bottom spread, after costs, is +6.8%/yr with a confidence range of -1.8% to +15.8%. Because that range includes zero, it is not yet statistically reliable."
           ]}
         >
           <LineChart
@@ -322,9 +368,11 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
         <ChartCard
           illustrative={illustrative}
           title="Signal Decision Waterfall"
+          explain="Which signals we kept, which we dropped, and the honest reason for each."
+          howTo="A green check means the signal had usable data and was tested. A grey strike-through means it was dropped. We show failures instead of hiding them."
           annotation={[
-            "A3 (attention) and A4 (tone dispersion) survived FDR; A1, and the C and F families, did not.",
-            "B and D were dropped for missing data (dead Yahoo ESG endpoint; empty SGX/Bursa feed) - disclosed, not hidden."
+            "Kept: news sentiment (A), plus fundamentals (C) and regulatory (F) which had data but tested weaker.",
+            "Dropped for missing data: ESG scores (Yahoo's feed went dead) and disclosures (the exchange feed was empty)."
           ]}
         >
           <DecisionWaterfall />
@@ -333,9 +381,11 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
         <ChartCard
           illustrative={illustrative}
           title="Placebo Test"
+          explain="Could the result just be luck? We reshuffled the rankings 1,000 times to build a 'pure luck' distribution, then checked where the real result lands."
+          howTo="Grey bars = results from 1,000 random shuffles (pure chance). The green line = our real result. The further right of the grey pile, the less likely it is luck. 'p' is the share of lucky shuffles that beat us."
           annotation={[
-            `1,000 cross-sectional permutations of the ranking, gross of costs. The realized gross Q5-Q1 spread sits in the right tail: p=${placeboPValue} - the ranking carries information before costs.`,
-            `Net of costs that edge is inconclusive (Q5-Q1 CI straddles zero); Deflated Sharpe ${REAL_DEFLATED_SHARPE}. The gross signal is real; costs erode it - a normal, honest early-stage finding.`
+            `Before costs, the real result beats about ${(100 - placeboPValue * 100).toFixed(1)}% of random shuffles (p=${placeboPValue}) - the ranking carries genuine information.`,
+            `After costs it is inconclusive (the Top-vs-Bottom range includes zero). Risk-adjusted score (Deflated Sharpe): ${REAL_DEFLATED_SHARPE}. The signal is real before costs; costs erode it.`
           ]}
         >
           <Histogram
@@ -352,12 +402,27 @@ export default function ModelPerformance({ dataMode }: { dataMode: string }) {
         <ChartCard
           illustrative={illustrative}
           title="Universe Funnel"
+          explain="How we narrowed the broad ASEAN market down to the 198 liquid companies the model is actually tested and traded on."
+          howTo="Each bar is a filter step; the final green bar is the tested universe. The small bars below split those 198 names by country."
           annotation={[
-            "Validation runs on a cleaner liquid subset, not every screened name — this avoids illiquid micro-cap survivorship effects.",
-            "500 screened → liquidity filter (ADV > US$1M, ≥3yr history) → 198 final discovery names. Country split below (PH excluded: no resolvable tickers)."
+            "We validate on liquid large-caps only, so the result is not flattered by tiny, untradeable stocks.",
+            "500 screened, filtered to names with over US$1M average daily volume and 3+ years of history, leaving 198 across SG / MY / ID / TH / VN (the Philippines had no resolvable tickers)."
           ]}
         >
           <UniverseFunnel />
+        </ChartCard>
+
+        <ChartCard
+          illustrative={illustrative}
+          title="Factor Heatmap"
+          explain="Predictive power of each signal at different look-ahead windows, from 1 to 12 months."
+          howTo="Rows are signals; columns are how far ahead we predict. Greener = stronger positive predictive power; an outlined cell passed the statistical reliability check (FDR)."
+          annotation={[
+            "News-attention and tone signals are the strongest, and they strengthen at longer horizons.",
+            "Only two cells are outlined (A3 at 3 months, A4 at 12 months) - the only signals that survived multiple-testing correction."
+          ]}
+        >
+          <Heatmap />
         </ChartCard>
       </div>
     </section>

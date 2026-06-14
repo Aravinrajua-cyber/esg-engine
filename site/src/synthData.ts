@@ -49,3 +49,9 @@ export const signalDecisions: SignalDecision[] = [
   { family: "D", label: "Disclosure Behaviour", kept: false, reason: "Dropped: SGX/Bursa announcement feed returned empty." },
   { family: "F", label: "Regulatory Overlay", kept: true, reason: "Country-level hand-built overlay; did not survive FDR on the real panel." }
 ];
+
+// Real per-variable IC across forecast horizons (1/3/6/12 months) from validation_results.json.
+// Darker green = stronger positive predictive power; FDR-survivor cells are outlined.
+export interface HeatCell { h: number; ic: number | null; fdr: boolean; }
+export interface HeatRow { variable: string; label: string; cells: HeatCell[]; }
+export const factorHeatmap: { horizons: number[]; rows: HeatRow[] } = {"horizons": [1, 3, 6, 12], "rows": [{"variable": "A1", "label": "Sentiment velocity", "cells": [{"h": 1, "ic": 0.0039, "fdr": false}, {"h": 3, "ic": 0.0141, "fdr": false}, {"h": 6, "ic": 0.0409, "fdr": false}, {"h": 12, "ic": 0.0282, "fdr": false}]}, {"variable": "A2", "label": "Sentiment acceleration", "cells": [{"h": 1, "ic": -0.025, "fdr": false}, {"h": 3, "ic": -0.0108, "fdr": false}, {"h": 6, "ic": 0.006, "fdr": false}, {"h": 12, "ic": -0.0008, "fdr": false}]}, {"variable": "A3", "label": "Attention trend", "cells": [{"h": 1, "ic": 0.0232, "fdr": false}, {"h": 3, "ic": 0.0387, "fdr": true}, {"h": 6, "ic": 0.0279, "fdr": false}, {"h": 12, "ic": 0.005, "fdr": false}]}, {"variable": "A4", "label": "Tone dispersion", "cells": [{"h": 1, "ic": 0.0182, "fdr": false}, {"h": 3, "ic": 0.0391, "fdr": false}, {"h": 6, "ic": 0.0673, "fdr": false}, {"h": 12, "ic": 0.0936, "fdr": true}]}, {"variable": "F1", "label": "Country regulatory", "cells": [{"h": 1, "ic": -0.0101, "fdr": false}, {"h": 3, "ic": -0.0186, "fdr": false}, {"h": 6, "ic": -0.0432, "fdr": false}, {"h": 12, "ic": -0.0687, "fdr": false}]}]};

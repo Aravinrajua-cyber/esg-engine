@@ -279,7 +279,7 @@ footer { padding: 60px clamp(20px, 7vw, 112px); color: var(--muted); border-top:
 .chartCard:hover { border-color: var(--hover); }
 .chartCard h3 { color: var(--emphasis); margin: 0; font-size: 20px; }
 .chartHeader { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 14px; }
-.chartHeader span { flex: none; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: 11px; font-weight: 750; padding: 4px 9px; text-transform: uppercase; letter-spacing: .08em; }
+.chartHeader .badge { flex: none; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: 11px; font-weight: 750; padding: 4px 9px; text-transform: uppercase; letter-spacing: .08em; }
 .chartSvg { display: block; width: 100%; height: auto; min-height: 280px; background: transparent; }
 .chartSvg rect:first-of-type { fill: #0d0d0d; stroke: var(--border); }
 .gridLine { stroke: var(--grid); stroke-width: 1; }
@@ -312,6 +312,42 @@ footer { padding: 60px clamp(20px, 7vw, 112px); color: var(--muted); border-top:
 .countryBars div { display: grid; grid-template-columns: 36px 1fr 40px; gap: 10px; align-items: center; color: var(--muted); font-size: 13px; }
 .countryBars i { height: 8px; border-radius: 999px; overflow: hidden; background: var(--grid); }
 .countryBars b { display: block; height: 100%; background: #777777; }
+
+/* ---- beginner-friendly chart chrome -------------------------------------------------------- */
+.chartCard h3 { display: flex; align-items: center; }
+.infoIcon {
+  display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: 8px; flex: none;
+  border: 1px solid var(--border); border-radius: 50%; color: var(--muted);
+  font-size: 11px; font-style: italic; font-weight: 700; cursor: help; position: relative;
+}
+.infoIcon:hover, .infoIcon:focus-visible { color: var(--signal); border-color: var(--signal); outline: none; }
+.infoIcon::after {
+  content: attr(data-tip); position: absolute; top: 130%; left: 0; width: min(260px, 70vw); z-index: 6;
+  background: var(--elevated); border: 1px solid var(--hover); border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-size: 12px; font-style: normal; font-weight: 400; line-height: 1.5;
+  opacity: 0; visibility: hidden; transition: opacity 200ms ease; pointer-events: none;
+}
+.infoIcon:hover::after, .infoIcon:focus-visible::after { opacity: 1; visibility: visible; }
+.chartExplain { color: var(--text); margin: 0 0 12px; font-size: 14px; }
+.annotation .takeawayLabel { color: var(--signal); font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 2px; }
+
+/* ---- factor heatmap ------------------------------------------------------------------------ */
+.heatmap { display: grid; gap: 4px; margin-top: 4px; }
+.heatRow { display: grid; grid-template-columns: 130px repeat(4, 1fr); gap: 4px; align-items: stretch; }
+.heatColHead { text-align: center; color: var(--muted); font-size: 12px; padding: 2px 0; }
+.heatLabel { color: var(--text); font-size: 13px; display: flex; align-items: center; }
+.heatCell { display: grid; place-items: center; min-height: 34px; border-radius: 4px; color: var(--emphasis); font-size: 12px; border: 1px solid transparent; }
+.heatCell.fdr { border-color: var(--signal); box-shadow: 0 0 0 1px var(--signal) inset; }
+
+/* ---- compare bars + matrix caption --------------------------------------------------------- */
+.compareBar { display: grid; grid-template-columns: 120px 1fr 28px; gap: 8px; align-items: center; margin-top: 6px; }
+.compareBar small { color: var(--muted); font-size: 11px; line-height: 1.2; }
+.compareBar i { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.compareBar b { display: block; height: 100%; background: var(--muted); }
+.compareBar em { color: var(--text); font-style: normal; font-size: 12px; text-align: right; }
+.matrixWrap { display: grid; gap: 8px; align-content: start; }
+.matrixWrap h3 { color: var(--emphasis); margin: 0; font-size: 18px; }
+.matrixCaption { color: var(--muted); font-size: 12px; margin: 0; }
 
 /* ---- responsive ---------------------------------------------------------------------------- */
 @media (max-width: 1100px) {

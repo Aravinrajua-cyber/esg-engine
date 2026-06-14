@@ -9,9 +9,9 @@
   "hero": {
     "eyebrow": "CGS International ESG Intelligence",
     "title": "ESG scores are slow. The signal isn't.",
-    "lead": "A client-side research demo ranking ASEAN companies by early ESG momentum, confidence, and data coverage.",
-    "statTitle": "Net annual Q5 minus Q1 spread from the model headline artifact.",
-    "statLabel": "net Q5-Q1 annual spread"
+    "lead": "We track which ASEAN companies are improving their ESG behaviour before ratings agencies catch up. The model scores 198 large-cap companies across Singapore, Malaysia, Thailand, Indonesia and Vietnam, and shows exactly how confident it is in each.",
+    "statTitle": "Average yearly return gap between the model's top-ranked and bottom-ranked companies, after trading costs.",
+    "statLabel": "per-year gap: top vs bottom companies (after costs)"
   },
   "idea": {
     "eyebrow": "The idea",
@@ -46,16 +46,16 @@
     "eyebrow": "Methodology",
     "title": "Transparent variables, composites, and validation.",
     "buttonLabel": "How to read this",
-    "explainer": "Each chart reads from the JSON contracts. Placeholder prose remains intentionally brief until Claude supplies final research text.",
+    "explainer": "Plain version: we turn news, company financials and country policy into signals, keep only the ones that pass a strict statistical reliability check, combine the survivors, and test the result on years the model never saw while it was being designed.",
     "validatedWeightsPrefix": "Validated weights:"
   },
   "results": {
     "eyebrow": "Results",
     "title": "Interactive model outputs.",
     "metrics": {
-      "deflatedSharpe": "Deflated Sharpe",
-      "testIc": "Test IC",
-      "netSharpe": "Net Sharpe"
+      "deflatedSharpe": "Risk-Adjusted Score",
+      "testIc": "Out-of-Sample Predictive Power",
+      "netSharpe": "Return per Unit of Risk (net)"
     },
     "backtestTitle": "Q5 vs Q1 vs benchmark"
   },
@@ -64,19 +64,19 @@
     "title": "Limits are part of the product.",
     "cards": [
       {
-        "severity": "Severity 1",
-        "title": "Data coverage",
-        "body": "Placeholder risk text for Claude to replace with final report language."
+        "severity": "Honest limit",
+        "title": "The net edge isn't proven",
+        "body": "Before trading costs the signal is real, but after costs the top-vs-bottom gap could still be zero. We report that openly instead of claiming a win."
       },
       {
-        "severity": "Severity 2",
-        "title": "Market microstructure",
-        "body": "Placeholder risk text for Claude to replace with final report language."
+        "severity": "Data gap",
+        "title": "ESG scores went dark",
+        "body": "Yahoo's free ESG feed died mid-build and the exchange disclosure feed was empty, so the model leans on news sentiment and fundamentals. Licensed ESG data would strengthen it."
       },
       {
-        "severity": "Severity 3",
-        "title": "Model drift",
-        "body": "Placeholder risk text for Claude to replace with final report language."
+        "severity": "Scope",
+        "title": "Research demo, not advice",
+        "body": "This screens a liquid ASEAN universe for research. It demonstrates method and rigour - it is not investment advice or a live trading product."
       }
     ]
   },

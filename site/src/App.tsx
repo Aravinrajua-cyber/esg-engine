@@ -88,10 +88,10 @@ export default function App() {
       <header className="topbar">
         <a href="#hero" className="brand">{siteContent.brand}</a>
         <nav>
-          <a href="#leaderboard">{siteContent.nav.leaderboard}</a>
+          <a href="#hero">Overview</a>
           <a href="#model-performance">Model Performance</a>
-          <a href="#methodology">{siteContent.nav.methodology}</a>
-          <a href="#risks">{siteContent.nav.risks}</a>
+          <a href="#universe">Universe</a>
+          <a href="#risks">Risks</a>
         </nav>
       </header>
       <main>
@@ -228,9 +228,10 @@ function Leaderboard({ feed }: { feed: CompaniesFeed }) {
   const flags = unique(feed.companies.flatMap((c) => c.flags));
 
   return (
-    <section id="leaderboard" className="leaderboard section">
-      <p className="eyebrow">Leaderboard</p>
-      <h2>{feed.universe_size} {siteContent.leaderboard.titleSuffix}</h2>
+    <section id="universe" className="leaderboard section">
+      <p className="eyebrow">The Universe</p>
+      <h2>{feed.universe_size} ASEAN companies, ranked by ESG momentum</h2>
+      <p className="measure">Search, filter and sort every company the model scores. Click a row to open its score breakdown, risk flags and confidence range. Drag the sliders to re-weight the four signal groups and the ranking updates live.</p>
       <div className="toolbar">
         <label className="search"><Search size={18} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={siteContent.leaderboard.searchPlaceholder} /></label>
         <Select label="Country" value={country} setValue={setCountry} options={countries} />
@@ -336,17 +337,50 @@ function CompanyDetail({ company, flags, compareCompanies }: { company: Company;
 }
 
 function Matrix({ company }: { company: Company }) {
-  return <div className="matrix"><span>Momentum</span><i style={{ left: `${company.esg_level_pctile}%`, bottom: `${company.esg_momentum_pctile}%` }} /><b>Level</b></div>;
+  return (
+    <div className="matrixWrap">
+      <h3>Level vs momentum</h3>
+      <div className="matrix" title="Horizontal = current ESG level percentile. Vertical = ESG momentum percentile. The dot is this company.">
+        <i style={{ left: `${company.esg_level_pctile}%`, bottom: `${company.esg_momentum_pctile}%` }} />
+        <span>Momentum ↑</span>
+        <b>ESG level →</b>
+      </div>
+      <p className="matrixCaption">Dot = this company. Top-left = improving fast but still low on ESG level (a "hidden winner").</p>
+    </div>
+  );
 }
 
 function Timeline({ company }: { company: Company }) {
-  if (!company.timeseries) return <div className="emptyState">No timeseries available for this company.</div>;
-  const points = company.timeseries.score.map((value, index, arr) => `${(index / (arr.length - 1)) * 100},${100 - value}`).join(" ");
-  return <div className="timeline"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points={points} /></svg><span>Score timeline</span></div>;
+  if (!company.timeseries) return <div className="emptyState">No score history available for this company.</div>;
+  const arr = company.timeseries.score;
+  const points = arr
+    .map((value, index) => (value == null ? null : `${(index / Math.max(1, arr.length - 1)) * 100},${100 - value}`))
+    .filter((p): p is string => p !== null)
+    .join(" ");
+  return <div className="timeline"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points={points} /></svg><span>Score over time (higher = better)</span></div>;
 }
 
 function Compare({ companies }: { companies: Company[] }) {
-  return <div className="comparePanel"><h3>Compare</h3><div>{companies.map((company) => <article key={company.ticker}><strong>{company.name}</strong><span>{company.overall_score.toFixed(1)} | {company.grade}</span>{PILLARS.map((key) => <i key={key}><b style={{ width: `${company.pillar_scores[key]}%` }} /></i>)}</article>)}</div></div>;
+  return (
+    <div className="comparePanel">
+      <h3>Compare ({companies.length})</h3>
+      <div>
+        {companies.map((company) => (
+          <article key={company.ticker}>
+            <strong>{company.name}</strong>
+            <span>Score {company.overall_score.toFixed(1)} · Grade {company.grade}</span>
+            {PILLARS.map((key) => (
+              <div className="compareBar" key={key}>
+                <small>{labelFor(key)}</small>
+                <i><b style={{ width: `${company.pillar_scores[key]}%` }} /></i>
+                <em>{company.pillar_scores[key].toFixed(0)}</em>
+              </div>
+            ))}
+          </article>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function Methodology({ feed }: { feed: CompaniesFeed }) {
@@ -375,7 +409,7 @@ function Results({ feed }: { feed: CompaniesFeed }) {
         <Metric label={siteContent.results.metrics.testIc} value={feed.model.headline.test_ic.toFixed(3)} />
         <Metric label={siteContent.results.metrics.netSharpe} value={feed.model.headline.sharpe_net.toFixed(2)} />
       </div>
-      <p className="measure">Headline statistics are illustrative synthetic values until the Phase 4 run is frozen. The full validation visuals are on the <a href="#model-performance">Model Performance</a> page.</p>
+      <p className="measure">These are the frozen model results in plain terms: a risk-adjusted score, out-of-sample predictive power, and after-cost return per unit of risk. The net top-vs-bottom edge is positive but not yet statistically reliable — the full picture is on the <a href="#model-performance">Model Performance</a> charts.</p>
     </section>
   );
 }
