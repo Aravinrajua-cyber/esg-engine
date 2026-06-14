@@ -1,34 +1,50 @@
 [
   {
-    "key": "Consumer",
+    "key": "Basic Materials",
     "spread_net": 7.23
   },
   {
-    "key": "Energy",
+    "key": "Communication Services",
     "spread_net": 4.91
   },
   {
-    "key": "Financials",
+    "key": "Consumer",
     "spread_net": 6.92
   },
   {
-    "key": "Industrials",
+    "key": "Consumer Cyclical",
     "spread_net": -2.15
   },
   {
-    "key": "Materials",
+    "key": "Consumer Defensive",
     "spread_net": 2.51
   },
   {
-    "key": "Real Estate",
+    "key": "Energy",
     "spread_net": 2.84
   },
   {
-    "key": "Technology",
+    "key": "Financial Services",
     "spread_net": 2.03
   },
   {
-    "key": "Utilities",
+    "key": "Financials",
     "spread_net": 4.78
+  },
+  {
+    "key": "Healthcare",
+    "spread_net": 5.54
+  },
+  {
+    "key": "Industrials",
+    "spread_net": 4.57
+  },
+  {
+    "key": "Materials",
+    "spread_net": 2.29
+  },
+  {
+    "key": "Real Estate",
+    "spread_net": 0.06
   }
 ]
