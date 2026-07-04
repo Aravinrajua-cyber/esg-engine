@@ -59,7 +59,7 @@ cd /d C:\Hackathon\esg-engine\site
 npm.cmd install --cache .npm-cache
 ```
 
-If package fetches fail with `EACCES`, the current environment likely blocks outbound registry access. See `FRONTEND_BUILD_BLOCKER.md`.
+If package fetches fail with `EACCES` and registry/proxy settings look normal (`npm config get registry` returns `https://registry.npmjs.org/`, proxy settings are `null`), the environment is blocking outbound registry access — for example a sandboxed shell or restrictive antivirus. Re-run the install from a regular user terminal with network access. If `npm cache verify` fails with `EPERM` on the default cache, the project-local `--cache .npm-cache` workaround above bypasses it.
 
 Do not run the live Yahoo fetchers as part of routine local verification unless outbound HTTPS and write access to `data/raw/` are both confirmed.
 
@@ -77,4 +77,4 @@ Open the printed URL, usually:
 http://127.0.0.1:5173/
 ```
 
-Run the checks in `MANUAL_QA_CHECKLIST.md`.
+Run the checks in `docs/qa/MANUAL_QA_CHECKLIST.md`.

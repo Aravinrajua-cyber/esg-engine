@@ -94,7 +94,7 @@ if errorlevel 1 (
 )
 call npm.cmd install
 if errorlevel 1 (
-  echo [FAIL] npm install failed. See FRONTEND_BUILD_BLOCKER.md if registry access is blocked.
+  echo [FAIL] npm install failed. See LOCAL_RUN_GUIDE.md if registry access is blocked.
   exit /b 1
 )
 

@@ -820,7 +820,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH, phase4_path: Path = PHAS
     _section_intro(
         doc,
         "25. Reproducibility Instructions",
-        "The following commands reproduce the current non-frontend artifacts in this environment. Frontend commands require npm dependency access as documented in FRONTEND_BUILD_BLOCKER.md.",
+        "The following commands reproduce the current non-frontend artifacts in this environment. Frontend commands require npm dependency access as documented in LOCAL_RUN_GUIDE.md.",
     )
     _table(
         doc,
@@ -908,7 +908,7 @@ def build_final_report(out_path: Path = FINAL_OUT_PATH, phase4_path: Path = PHAS
             ("Placebo feed", str(SITE_DATA_DIR / "placebo.json")),
             ("Phase 4 results", str(phase4_path)),
             ("Figures directory", str(FIGURE_DIR)),
-            ("Frontend blocker note", str(PROJECT_ROOT / "FRONTEND_BUILD_BLOCKER.md")),
+            ("Local run guide", str(PROJECT_ROOT / "LOCAL_RUN_GUIDE.md")),
         ],
         [2.0, 4.5],
     )

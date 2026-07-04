@@ -73,7 +73,8 @@ Supporting directories:
 ## Running Locally
 
 ```bat
-cd /d C:\Hackathon\esg-engine
+git clone https://github.com/Aravinrajua-cyber/esg-engine.git
+cd esg-engine
 scripts\verify_local.bat
 ```
 
@@ -83,17 +84,19 @@ If verification passes, start the site:
 scripts\start_site.bat
 ```
 
-Manual equivalents and troubleshooting: `LOCAL_RUN_GUIDE.md`. If npm package fetching is blocked, see `FRONTEND_BUILD_BLOCKER.md`.
+The `.bat` entry points are Windows-only. On macOS/Linux, run the manual equivalents in `LOCAL_RUN_GUIDE.md` directly (`python -m pytest -q`, `python -m src.report.build_report`, and `npm install && npm run dev` in `site/`). Troubleshooting lives in the same guide.
 
 ## Repository Guide
 
 - `REPORT_METHODOLOGY.md` — full statistical methodology and audit trail
 - `RESEARCH_LOG.md` — chronological research decisions
 - `BIAS_REGISTER.md` — known biases, cuts, and mitigations
-- `DATA_IMPORT_GUIDE.md` — CSV import contract for licensed real-data mode
-- `DEMO_SCRIPT.md` — 3-minute judge-facing demo flow
-- `MANUAL_QA_CHECKLIST.md` — browser and Word report QA
+- `DATA_IMPORT_GUIDE.md` — CSV import contract for licensed real-data mode (schemas in `SCHEMAS.md`)
+- `docs/qa/` — accessibility, security, and frontend review reports; QA checklists; demo script
+- `docs/process/` — development-process records
 
 ## Disclaimer
 
 This is a research prototype built for a hackathon. Outputs are not investment advice. Synthetic demonstration artifacts (where present) are illustrative only and are labeled as such.
+
+Built with an agent-assisted development workflow; all research decisions, methodology choices, and interpretations are my own.

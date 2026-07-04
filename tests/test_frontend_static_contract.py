@@ -64,7 +64,7 @@ def test_company_detail_labels_esg_and_non_esg_components():
     assert "Non-ESG component: Disclosure Behavior" in source
 
 
-# --- Model Performance page (added alongside the screener; see CLAUDE_CODEX_FRONTEND_INTEGRATION.md) ---
+# --- Model Performance page (added alongside the screener; see docs/process/CLAUDE_CODEX_FRONTEND_INTEGRATION.md) ---
 
 MODEL_PERF_SOURCE = PROJECT_ROOT / "site" / "src" / "ModelPerformance.tsx"
 PLOT_SOURCE = PROJECT_ROOT / "site" / "src" / "Plot.tsx"
